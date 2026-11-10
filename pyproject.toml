@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mangrove_condition"
+version = "0.3.0"
+description = "SEEA EA ecosystem condition assessment (IUCN EFG MFT1.2, Maldives)"
+requires-python = ">=3.12"
+dependencies = [
+    "openpyxl>=3.1",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "geopandas>=0.14",
+    "rasterio>=1.3",
+    "shapely>=2.0",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

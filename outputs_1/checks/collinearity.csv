@@ -1,0 +1,2 @@
+scope,indicator_a,indicator_b,spearman,n_pairs,flagged
+atoll-year,COND_NDVI,COND_SAL,-0.462643,71,False

@@ -1,0 +1,23 @@
+Maldives mangroves ecosystem condition account
+Configuration: condition_config.xlsx (sha256 a395b5786812...)
+
+Indicators
+  COND_NDVI: level mangrove, direction standard, reference configuration, opening [2017], closing [2024], table reused
+  COND_SAL: level atoll, direction inverse, reference configuration, opening [2017], closing [2024], table reused
+  Placeholders (no data): COND_SM, COND_SOC, COND_BII, COND_BHI, COND_CANOPY, COND_CONN, COND_AREA
+
+Points to know
+  - COND_NDVI: 127 of 129 units have a value in the opening period [2017].
+  - COND_NDVI: 126 of 129 units have a value in the closing period [2024].
+  - COND_NDVI: 65 unit-year values below and 0 above the reference levels were set to score 0 and 1.
+  - COND_NDVI: 15 unit-year values have low coverage (valid share below 0.8); they are used and flagged in the quality report.
+
+Index (closing period), by atoll
+  Gaafu Dhaalu: 0.420 (indicators: COND_NDVI;COND_SAL)
+  Haa Alifu: 0.508 (indicators: COND_NDVI;COND_SAL)
+  Haa Dhaalu: 0.529 (indicators: COND_NDVI;COND_SAL)
+  Kaafu: 0.518 (indicators: COND_NDVI;COND_SAL)
+  Laamu: 0.423 (indicators: COND_NDVI;COND_SAL)
+  Lhaviyani: 0.492 (indicators: COND_NDVI;COND_SAL)
+  Noonu: 0.502 (indicators: COND_NDVI;COND_SAL)
+  Seenu: 0.451 (indicators: COND_NDVI;COND_SAL)
