@@ -369,7 +369,7 @@ def _build_indicator(reader: _Reader, row: int, rec: dict[str, Any], indicator_i
     raster_file = rec.get("raster_file")
     if raster_file is not None:
         raster_path = Path(str(raster_file))
-        if raster_path.is_absolute() or ".." in raster_path.parts:
+        if raster_path.is_absolute() or str(raster_file).startswith(("/", "\\")) or ".." in raster_path.parts:
             reader.error(sheet, row, f"'{indicator_id}': 'raster_file' must be a file name inside the raster folder, not a full path.")
         if level is None and rec.get("level") is None:
             reader.error(sheet, row, f"'{indicator_id}': 'level' is required when 'raster_file' is filled.")

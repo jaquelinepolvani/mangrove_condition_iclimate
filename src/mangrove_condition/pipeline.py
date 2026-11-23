@@ -169,8 +169,8 @@ def run(config_path: str | Path, project_dir: str | Path | None = None, log=prin
     if config.ecvs:
         from .ecv import run_ecv
         log("8. ECV trends")
-        result.files += run_ecv(config, base_dir, units, out_dir, log)
-
+        result.files += run_ecv(config, base_dir, units, out_dir, log, config_path)
+        
     result.files.append(outputs.write_run_record(out_dir, config, infos, notes, result.files, units))
     summary = out_dir / "run_summary.txt"
     summary.write_text(summary_text(result), encoding="utf-8")

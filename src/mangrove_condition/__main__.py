@@ -63,6 +63,22 @@ def _run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _ecv_report(args: argparse.Namespace) -> int:
+    from .ecv import run_ecv_report
+    from .standardized import TableError
+    from .units import UnitsError
+
+    try:
+        run_ecv_report(args.path, args.project_dir)
+    except ConfigError as exc:
+        print(exc)
+        return 1
+    except (UnitsError, TableError) as exc:
+        print(f"\nERROR: {exc}")
+        return 2
+    return 0
+
+
 def _fix_labels(args: argparse.Namespace) -> int:
     from .labels import fix_labels
 
@@ -105,6 +121,11 @@ def main(argv: list[str] | None = None) -> int:
     run_cmd.add_argument("--project-dir", type=Path, default=None, help="Folder that paths in the Project sheet refer to.")
     run_cmd.add_argument("--no-maps", action="store_true", help="Skip the maps (faster).")
     run_cmd.set_defaults(func=_run)
+
+    ecv_cmd = sub.add_parser("ecv-report", help="Only the ECV figures, trend tables and README (outputs/ecv).")
+    ecv_cmd.add_argument("path", nargs="?", default=DEFAULT_CONFIG, type=Path)
+    ecv_cmd.add_argument("--project-dir", type=Path, default=None, help="Folder that paths in the Project sheet refer to.")
+    ecv_cmd.set_defaults(func=_ecv_report)
 
     fix = sub.add_parser("fix-labels", help="Correct the Island and Atoll labels of the patches with the official island polygons (admin 2).")
     fix.add_argument("units", type=Path, help="Mangrove patches file (shapefile).")

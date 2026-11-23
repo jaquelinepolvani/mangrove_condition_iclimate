@@ -50,8 +50,8 @@ def messages(issues, severity="error") -> str:
 def test_template_is_valid_and_has_all_sheets(config_path):
     config, issues = validate_config(config_path)
     assert config is not None, messages(issues)
-    assert load_workbook(config_path).sheetnames == ["Indicators", "Anchors", "Project", "Changes", "Legend"]
-
+    assert load_workbook(config_path).sheetnames == ["Indicators", "Anchors", "Tables", "ECV", "Project", "Changes",
+                                                     "Legend"]
 
 def test_template_values(config_path):
     config = load_config(config_path)
