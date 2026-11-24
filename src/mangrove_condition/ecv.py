@@ -255,7 +255,7 @@ def plot_box(item: EcvSpec, annual: pd.DataFrame, atolls: list[str], out: Path) 
 
 def _md_table(trends: pd.DataFrame, unit: str) -> str:
     base = _base_unit(unit)
-    head = (f"| Atoll | Mangrove area (km2) | Period | Long-term mean ({_axis_unit(unit)}) | Trend ({base} per decade) | p |\n"
+    head = (f"| Atoll | Mangrove area (km2) | Period | Mean ({_axis_unit(unit)}) | Trend ({base} per decade) | p |\n"
             "|---|---|---|---|---|---|\n")
     rows = []
     for r in trends.itertuples():
@@ -265,6 +265,15 @@ def _md_table(trends: pd.DataFrame, unit: str) -> str:
         rows.append(f"| {r.atoll} | {r.mangrove_area_km2:.3f} | {r.first_year} to {r.last_year} | {r.mean:.4g} | "
                     f"{bold}{slope}{bold} | {p} |")
     return head + "\n".join(rows)
+
+
+def _summary_trend(per_decade: float, base_unit: str) -> str:
+    """Trend text of the summary table. Metres are shown as millimetres, which reads better for small trends."""
+    if np.isnan(per_decade):
+        return "n/a"
+    if base_unit == "m":
+        per_decade, base_unit = per_decade * 1000, "mm"
+    return f"{per_decade:+.3g} {base_unit}".strip()
 
 
 def _split_name(name: str) -> tuple[str, str]:
@@ -280,16 +289,6 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
         "",
         REPORT_INTRO,
         "",
-        "## How to read the figures",
-        "",
-        f"- **Atolls with mangroves:** {len(atolls)} ({', '.join(atolls)}). Mangrove extent: Cerri 2020.",
-        f"- **Main atolls:** {', '.join(main)}. Together they hold {share:.0%} of the mangrove area.",
-        "- **Overall mean:** mean of the atolls with mangroves, in years where all of them have a value. "
-        "Used in the summary table.",
-        "- **Long-term mean:** mean of the annual values of one atoll over the whole period. "
-        "Used in the atoll tables and in the maps.",
-        "- **Dashed line:** linear trend (least squares) of the annual values. A trend is called significant when p < 0.05.",
-        "",
         "## Summary",
         "",
         "| Variable | Source | Period | Unit | Trend per decade |",
@@ -298,8 +297,18 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
     for s in sections:
         variable, source = _split_name(s["name"])
         lines.append(f"| [{variable}](#{s['anchor']}) | {source} | {s['period']} | {s['unit_label']} | {s['agg_trend']} |")
-    lines += ["", f"Trend of the overall mean of the {len(atolls)} atolls with mangroves, over the period shown. "
-                  "Bold: significant (p < 0.05).", ""]
+    lines += [
+        "",
+        f"Trend of the average of the {len(atolls)} atolls with mangroves, in years where all of them have a value, "
+        "over the period shown. Bold: significant (p < 0.05).",
+        "",
+        "## How to read the figures",
+        "",
+        f"- **Atolls with mangroves:** {len(atolls)} ({', '.join(atolls)}). Mangrove extent: Cerri 2020.",
+        f"- **Main atolls:** {', '.join(main)}. Together they hold {share:.0%} of the mangrove area.",
+        "- **Dashed line:** linear trend (least squares) of the annual values. A trend is called significant when p < 0.05.",
+        "",
+    ]
     figure, table = 0, 0
     for s in sections:
         lines += [f"## {s['name']}", ""]
@@ -311,10 +320,12 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
         ]
         if s.get("maps"):
             maps = [
-                ("3_map_mean", f"long-term mean of the annual values for the whole Maldives ({s['map_period']}). "
-                               "Outlines: atolls; dark outline: atolls with mangroves."),
-                ("4_map_atolls", f"long-term mean of the annual values by atoll ({s['map_period']}). Colour: atolls with "
-                                 "mangroves; grey: atolls without mangroves in the Cerri 2020 extent."),
+                ("3_map_mean", f"mean of the annual values for the whole Maldives ({s['map_period']}). "
+                               "Outlines: atolls; dark outline: atolls with mangroves. The colour scale spans at least the range of "
+                               "the annual values over time."),
+                ("4_map_atolls", f"mean of the annual values by atoll ({s['map_period']}). Colour: atolls with "
+                                 "mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale spans at least "
+                                 "the range of the annual values over time."),
             ]
         else:
             maps = []
@@ -340,7 +351,7 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
             lines += [f"![{s['name']}, figure {figure}](figures/{s['id']}_{suffix}.png)", "",
                       f"**Figure {figure}.** {s['name']}: {text}", ""]
         table += 1
-        lines += [f"**Table {table}.** {s['name']}: long-term mean and linear trend by atoll, largest mangrove area first. "
+        lines += [f"**Table {table}.** {s['name']}: mean of the annual values and linear trend by atoll, largest mangrove area first. "
                   "Bold: significant (p < 0.05).", "", s["table"], ""]
         if s["note"]:
             lines += [s["note"], ""]
@@ -412,7 +423,7 @@ def run_ecv(config: Config, base_dir: Path, units: Units, out_dir: Path, log=pri
         if item.exclude_years:
             note = f"Years left out of the trends: {', '.join(str(y) for y in item.exclude_years)}."
         significant = not np.isnan(fit["p"]) and fit["p"] < SIGNIFICANCE
-        trend_text = "n/a" if np.isnan(fit["slope"]) else f"{fit['slope'] * 10:+.3g} {_base_unit(item.unit or '')}".strip()
+        trend_text = _summary_trend(fit["slope"] * 10, _base_unit(item.unit or ""))
         section = {
             "id": item.id, "name": item.name, "anchor": _anchor(item.name), "unit_label": _axis_unit(item.unit),
             "period": f"{int(series['year'].min())} to {int(series['year'].max())}" if len(series) else "n/a",
@@ -432,8 +443,11 @@ def run_ecv(config: Config, base_dir: Path, units: Units, out_dir: Path, log=pri
                 means = _used(annual[annual["unit"].isin(atolls)]).groupby("unit")["value"].mean()
                 _, _, names = ecv_maps.read_stack(raster_path)
                 period = ecv_maps._period_text(names)
-                files.append(ecv_maps.plot_value_map(item, raster_path, atolls_ll, atolls, cmap_name, figures))
-                files.append(ecv_maps.plot_atoll_map(item, means, atolls_ll, section["period"], cmap_name, figures))
+                # The colour scale covers at least the range of the annual values over time (year to year changes),
+                # so that small differences between places do not look large.
+                span = float(series["value"].max() - series["value"].min()) if len(series) > 1 else None
+                files.append(ecv_maps.plot_value_map(item, raster_path, atolls_ll, atolls, cmap_name, figures, span))
+                files.append(ecv_maps.plot_atoll_map(item, means, atolls_ll, section["period"], cmap_name, figures, span))
                 section["maps"], section["map_period"] = True, period
         sections.append(section)
         log(f"  {item.id}: {series['year'].nunique()} years in the aggregate"

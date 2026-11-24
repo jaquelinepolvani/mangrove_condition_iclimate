@@ -2,26 +2,24 @@
 
 Task 3.2 of Work Package 3 of the iClimateAction project, funded by the European Commission and implemented by WMO, GCOS and GEO, assesses the climate change vulnerability of ecosystems in the Maldives, in collaboration with UNU-EHS. The assessment focuses on mangroves. This page presents the Essential Climate Variables (ECVs) compiled for it: sea surface temperature, sea level, sea state, precipitation and near-surface air temperature.
 
-## How to read the figures
-
-- **Atolls with mangroves:** 8 (Gaafu Dhaalu, Haa Alifu, Haa Dhaalu, Kaafu, Laamu, Lhaviyani, Noonu, Seenu). Mangrove extent: Cerri 2020.
-- **Main atolls:** Haa Alifu, Noonu, Haa Dhaalu, Seenu, Lhaviyani. Together they hold 92% of the mangrove area.
-- **Overall mean:** mean of the atolls with mangroves, in years where all of them have a value. Used in the summary table.
-- **Long-term mean:** mean of the annual values of one atoll over the whole period. Used in the atoll tables and in the maps.
-- **Dashed line:** linear trend (least squares) of the annual values. A trend is called significant when p < 0.05.
-
 ## Summary
 
 | Variable | Source | Period | Unit | Trend per decade |
 |---|---|---|---|---|
 | [Sea surface temperature](#sea-surface-temperature-esa-cci) | ESA CCI | 1991 to 2023 | °C | **+0.179 °C** |
-| [Sea level, absolute dynamic topography](#sea-level-absolute-dynamic-topography-copernicus-marine) | Copernicus Marine | 1993 to 2024 | m | **+0.0388 m** |
-| [Sea state, significant wave height](#sea-state-significant-wave-height-esa-cci) | ESA CCI | 1993 to 2023 | m | **-0.0279 m** |
+| [Sea level, absolute dynamic topography](#sea-level-absolute-dynamic-topography-copernicus-marine) | Copernicus Marine | 1993 to 2024 | m | **+38.8 mm** |
+| [Sea state, significant wave height](#sea-state-significant-wave-height-esa-cci) | ESA CCI | 1993 to 2023 | m | **-27.9 mm** |
 | [Precipitation](#precipitation-chirps-v20) | CHIRPS v2.0 | 1981 to 2025 | mm per year | **-101 mm** |
 | [Air temperature, daily mean](#air-temperature-daily-mean-chelsa) | CHELSA | 1993 to 2024 | °C | **+0.225 °C** |
 | [Air temperature, daily maximum](#air-temperature-daily-maximum-chelsa) | CHELSA | 1993 to 2024 | °C | **+0.229 °C** |
 
-Trend of the overall mean of the 8 atolls with mangroves, over the period shown. Bold: significant (p < 0.05).
+Trend of the average of the 8 atolls with mangroves, in years where all of them have a value, over the period shown. Bold: significant (p < 0.05).
+
+## How to read the figures
+
+- **Atolls with mangroves:** 8 (Gaafu Dhaalu, Haa Alifu, Haa Dhaalu, Kaafu, Laamu, Lhaviyani, Noonu, Seenu). Mangrove extent: Cerri 2020.
+- **Main atolls:** Haa Alifu, Noonu, Haa Dhaalu, Seenu, Lhaviyani. Together they hold 92% of the mangrove area.
+- **Dashed line:** linear trend (least squares) of the annual values. A trend is called significant when p < 0.05.
 
 ## Sea surface temperature (ESA CCI)
 
@@ -33,9 +31,9 @@ Trend of the overall mean of the 8 atolls with mangroves, over the period shown.
 
 **Figure 2.** Sea surface temperature (ESA CCI): distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
 
-**Table 1.** Sea surface temperature (ESA CCI): long-term mean and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 1.** Sea surface temperature (ESA CCI): mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
 
-| Atoll | Mangrove area (km2) | Period | Long-term mean (°C) | Trend (°C per decade) | p |
+| Atoll | Mangrove area (km2) | Period | Mean (°C) | Trend (°C per decade) | p |
 |---|---|---|---|---|---|
 | Haa Alifu | 0.339 | 1991 to 2023 | 28.97 | **+0.172** | < 0.001 |
 | Noonu | 0.317 | 1991 to 2023 | 28.92 | **+0.169** | < 0.001 |
@@ -57,13 +55,13 @@ Trend of the overall mean of the 8 atolls with mangroves, over the period shown.
 **Figure 4.** Sea level, absolute dynamic topography (Copernicus Marine): distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
 
 <table><tr>
-<td width="50%" valign="top"><img src="figures/ECV_SEALEVEL_3_map_mean.png" alt="Sea level, absolute dynamic topography (Copernicus Marine), figure 5" width="100%"><br><b>Figure 5.</b> Sea level, absolute dynamic topography (Copernicus Marine): long-term mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves.</td>
-<td width="50%" valign="top"><img src="figures/ECV_SEALEVEL_4_map_atolls.png" alt="Sea level, absolute dynamic topography (Copernicus Marine), figure 6" width="100%"><br><b>Figure 6.</b> Sea level, absolute dynamic topography (Copernicus Marine): long-term mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent.</td>
+<td width="50%" valign="top"><img src="figures/ECV_SEALEVEL_3_map_mean.png" alt="Sea level, absolute dynamic topography (Copernicus Marine), figure 5" width="100%"><br><b>Figure 5.</b> Sea level, absolute dynamic topography (Copernicus Marine): mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves. The colour scale spans at least the range of the annual values over time.</td>
+<td width="50%" valign="top"><img src="figures/ECV_SEALEVEL_4_map_atolls.png" alt="Sea level, absolute dynamic topography (Copernicus Marine), figure 6" width="100%"><br><b>Figure 6.</b> Sea level, absolute dynamic topography (Copernicus Marine): mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale spans at least the range of the annual values over time.</td>
 </tr></table>
 
-**Table 2.** Sea level, absolute dynamic topography (Copernicus Marine): long-term mean and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 2.** Sea level, absolute dynamic topography (Copernicus Marine): mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
 
-| Atoll | Mangrove area (km2) | Period | Long-term mean (m) | Trend (m per decade) | p |
+| Atoll | Mangrove area (km2) | Period | Mean (m) | Trend (m per decade) | p |
 |---|---|---|---|---|---|
 | Haa Alifu | 0.339 | 1993 to 2024 | 0.8225 | **+0.0406** | < 0.001 |
 | Noonu | 0.317 | 1993 to 2024 | 0.8214 | **+0.0391** | < 0.001 |
@@ -84,9 +82,9 @@ Trend of the overall mean of the 8 atolls with mangroves, over the period shown.
 
 **Figure 8.** Sea state, significant wave height (ESA CCI): distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
 
-**Table 3.** Sea state, significant wave height (ESA CCI): long-term mean and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 3.** Sea state, significant wave height (ESA CCI): mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
 
-| Atoll | Mangrove area (km2) | Period | Long-term mean (m) | Trend (m per decade) | p |
+| Atoll | Mangrove area (km2) | Period | Mean (m) | Trend (m per decade) | p |
 |---|---|---|---|---|---|
 | Haa Alifu | 0.339 | 1993 to 2023 | 1.052 | **-0.0453** | < 0.001 |
 | Noonu | 0.317 | 1993 to 2023 | 0.8266 | **-0.0815** | < 0.001 |
@@ -107,9 +105,9 @@ Trend of the overall mean of the 8 atolls with mangroves, over the period shown.
 
 **Figure 10.** Precipitation (CHIRPS v2.0): distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
 
-**Table 4.** Precipitation (CHIRPS v2.0): long-term mean and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 4.** Precipitation (CHIRPS v2.0): mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
 
-| Atoll | Mangrove area (km2) | Period | Long-term mean (mm per year) | Trend (mm per decade) | p |
+| Atoll | Mangrove area (km2) | Period | Mean (mm per year) | Trend (mm per decade) | p |
 |---|---|---|---|---|---|
 | Haa Alifu | 0.339 | 1981 to 2025 | 1828 | -20.3 | 0.586 |
 | Noonu | 0.317 | 1981 to 2025 | 1652 | -34.7 | 0.340 |
@@ -131,13 +129,13 @@ Trend of the overall mean of the 8 atolls with mangroves, over the period shown.
 **Figure 12.** Air temperature, daily mean (CHELSA): distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
 
 <table><tr>
-<td width="50%" valign="top"><img src="figures/ECV_TAS_3_map_mean.png" alt="Air temperature, daily mean (CHELSA), figure 13" width="100%"><br><b>Figure 13.</b> Air temperature, daily mean (CHELSA): long-term mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves.</td>
-<td width="50%" valign="top"><img src="figures/ECV_TAS_4_map_atolls.png" alt="Air temperature, daily mean (CHELSA), figure 14" width="100%"><br><b>Figure 14.</b> Air temperature, daily mean (CHELSA): long-term mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent.</td>
+<td width="50%" valign="top"><img src="figures/ECV_TAS_3_map_mean.png" alt="Air temperature, daily mean (CHELSA), figure 13" width="100%"><br><b>Figure 13.</b> Air temperature, daily mean (CHELSA): mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves. The colour scale spans at least the range of the annual values over time.</td>
+<td width="50%" valign="top"><img src="figures/ECV_TAS_4_map_atolls.png" alt="Air temperature, daily mean (CHELSA), figure 14" width="100%"><br><b>Figure 14.</b> Air temperature, daily mean (CHELSA): mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale spans at least the range of the annual values over time.</td>
 </tr></table>
 
-**Table 5.** Air temperature, daily mean (CHELSA): long-term mean and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 5.** Air temperature, daily mean (CHELSA): mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
 
-| Atoll | Mangrove area (km2) | Period | Long-term mean (°C) | Trend (°C per decade) | p |
+| Atoll | Mangrove area (km2) | Period | Mean (°C) | Trend (°C per decade) | p |
 |---|---|---|---|---|---|
 | Haa Alifu | 0.339 | 1993 to 2024 | 27.35 | **+0.201** | < 0.001 |
 | Noonu | 0.317 | 1993 to 2024 | 27.31 | **+0.212** | < 0.001 |
@@ -159,13 +157,13 @@ Trend of the overall mean of the 8 atolls with mangroves, over the period shown.
 **Figure 16.** Air temperature, daily maximum (CHELSA): distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
 
 <table><tr>
-<td width="50%" valign="top"><img src="figures/ECV_TASMAX_3_map_mean.png" alt="Air temperature, daily maximum (CHELSA), figure 17" width="100%"><br><b>Figure 17.</b> Air temperature, daily maximum (CHELSA): long-term mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves.</td>
-<td width="50%" valign="top"><img src="figures/ECV_TASMAX_4_map_atolls.png" alt="Air temperature, daily maximum (CHELSA), figure 18" width="100%"><br><b>Figure 18.</b> Air temperature, daily maximum (CHELSA): long-term mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent.</td>
+<td width="50%" valign="top"><img src="figures/ECV_TASMAX_3_map_mean.png" alt="Air temperature, daily maximum (CHELSA), figure 17" width="100%"><br><b>Figure 17.</b> Air temperature, daily maximum (CHELSA): mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves. The colour scale spans at least the range of the annual values over time.</td>
+<td width="50%" valign="top"><img src="figures/ECV_TASMAX_4_map_atolls.png" alt="Air temperature, daily maximum (CHELSA), figure 18" width="100%"><br><b>Figure 18.</b> Air temperature, daily maximum (CHELSA): mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale spans at least the range of the annual values over time.</td>
 </tr></table>
 
-**Table 6.** Air temperature, daily maximum (CHELSA): long-term mean and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 6.** Air temperature, daily maximum (CHELSA): mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
 
-| Atoll | Mangrove area (km2) | Period | Long-term mean (°C) | Trend (°C per decade) | p |
+| Atoll | Mangrove area (km2) | Period | Mean (°C) | Trend (°C per decade) | p |
 |---|---|---|---|---|---|
 | Haa Alifu | 0.339 | 1993 to 2024 | 28.02 | **+0.208** | < 0.001 |
 | Noonu | 0.317 | 1993 to 2024 | 27.99 | **+0.22** | < 0.001 |

@@ -102,12 +102,17 @@ def test_name_is_split_into_variable_and_source():
     assert ecv._split_name("Plain name") == ("Plain name", "")
 
 
-def test_means_have_distinct_names(tmp_path):
+def test_how_to_read_comes_after_the_summary_and_has_no_mean_definitions(tmp_path):
     text = _report(tmp_path, _section())
-    assert "**Overall mean:**" in text and "**Long-term mean:**" in text
-    assert "**Mean:**" not in text
-    area = pd.Series({"A": 0.5, "B": 0.3, "C": 0.2})
-    assert "Long-term mean (m)" in ecv._md_table(ecv.trend_table(_spec(), _annual(), area, ["A", "B"]), "m")
+    assert text.index("## Summary") < text.index("## How to read the figures") < text.index("## Test variable")
+    assert "Overall mean" not in text and "Long-term mean" not in text and "**Mean:**" not in text
+
+
+def test_summary_shows_metres_as_millimetres():
+    assert ecv._summary_trend(-0.0279, "m") == "-27.9 mm"
+    assert ecv._summary_trend(0.179, "\u00b0C") == "+0.179 \u00b0C"
+    assert ecv._summary_trend(-101.0, "mm") == "-101 mm"
+    assert ecv._summary_trend(float("nan"), "m") == "n/a"
 
 
 def test_maps_sit_side_by_side_and_all_atolls_figure_is_off_by_default(tmp_path):

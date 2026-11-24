@@ -43,9 +43,9 @@ def test_maps_are_written(tmp_path):
     path = tmp_path / "a.tif"
     _raster(path)
     atolls = _atolls()
-    first = ecv_maps.plot_value_map(_spec(), path, atolls, ["Haa Alifu", "Kaafu"], "viridis", tmp_path)
+    first = ecv_maps.plot_value_map(_spec(), path, atolls, ["Haa Alifu", "Kaafu"], "viridis", tmp_path, 0.2)
     means = pd.Series({"Haa Alifu": 0.8, "Kaafu": 0.82})
-    second = ecv_maps.plot_atoll_map(_spec(), means, atolls, "2000 to 2002", "viridis", tmp_path)
+    second = ecv_maps.plot_atoll_map(_spec(), means, atolls, "2000 to 2002", "viridis", tmp_path, 0.2)
     assert first.exists() and second.exists()
     assert (tmp_path / "vector" / "ECV_T_3_map_mean.pdf").exists()
 
@@ -53,3 +53,18 @@ def test_maps_are_written(tmp_path):
 def test_regions_and_label_rules():
     assert not set(ecv_maps.REGIONS["N"]) & set(ecv_maps.REGIONS["C"])
     assert ecv_maps._spread([1.0, 1.05, 3.0], 0.2) == [1.0, 1.2, 3.0]
+
+
+def test_colour_scale_is_widened_only_when_values_differ_little():
+    assert ecv_maps.color_limits(0.81, 0.83, None) == (0.81, 0.83)
+    assert ecv_maps.color_limits(0.81, 0.83, 0.01) == (0.81, 0.83)
+    low, high = ecv_maps.color_limits(0.81, 0.83, 0.14)
+    assert np.isclose(low, 0.75) and np.isclose(high, 0.89)
+
+
+def test_long_title_is_wrapped_and_header_grows():
+    short = ecv_maps.title_lines("Precipitation", 4.4)
+    long = ecv_maps.title_lines("Sea level, absolute dynamic topography (Copernicus Marine)", 4.4)
+    assert len(short) == 1 and len(long) >= 2
+    assert all(len(line) <= int(4.4 * ecv_maps.TITLE_CHARS_PER_INCH) for line in long)
+    assert ecv_maps.header_height(long) > ecv_maps.header_height(short)

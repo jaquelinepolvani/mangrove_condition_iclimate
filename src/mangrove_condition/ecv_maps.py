@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import textwrap
 from pathlib import Path
 
 import matplotlib
@@ -32,6 +33,26 @@ REGIONS = {
 NO_LABEL = {"Male"}  # city polygon inside Kaafu
 LABEL_SIDE = {"Shaviyani": "right"}  # keeps the name away from the small island group west of it
 HEAD_IN = 0.75
+TITLE_CHARS_PER_INCH = 8.0   # about how many characters of the bold title fit in one inch of figure width
+TITLE_LINE_IN = 0.22         # extra header height for every additional title line
+
+
+def title_lines(title: str, width_in: float) -> list[str]:
+    """The title split into lines that fit the figure width, so that a long name is not cut at the edge."""
+    return textwrap.wrap(title, width=max(int(width_in * TITLE_CHARS_PER_INCH), 10)) or [title]
+
+
+def header_height(lines: list[str]) -> float:
+    return HEAD_IN + TITLE_LINE_IN * (len(lines) - 1)
+
+
+def color_limits(vmin: float, vmax: float, min_span: float | None = None) -> tuple[float, float]:
+    """Limits of the colour scale. When the values differ less than min_span, the scale is widened around their
+    middle, so that small differences are not shown as if they were large."""
+    if min_span and (vmax - vmin) < min_span:
+        middle = (vmin + vmax) / 2
+        return middle - min_span / 2, middle + min_span / 2
+    return vmin, vmax
 
 
 def _axis_unit(unit: str | None) -> str:
@@ -43,7 +64,7 @@ def _degree_label(value: float, axis: str) -> str:
     return f"{abs(value):g}°{hemi}"
 
 
-def _frame(fig, ax, extent, title: str, subtitle: str, height: float) -> None:
+def _frame(fig, ax, extent, lines: list[str], subtitle: str, height: float) -> None:
     from matplotlib.ticker import FixedLocator
 
     west, east, south, north = extent
@@ -64,8 +85,10 @@ def _frame(fig, ax, extent, title: str, subtitle: str, height: float) -> None:
         side.set_color(MUTED)
         side.set_linewidth(0.8)
     ax.tick_params(length=3, width=0.8, colors=MUTED)
-    fig.text(0.02, 1 - 0.14 / height, title, fontsize=12.5, fontweight="bold", color=INK, ha="left", va="top")
-    fig.text(0.02, 1 - 0.46 / height, subtitle, fontsize=9, color=MUTED, ha="left", va="top")
+    fig.text(0.02, 1 - 0.14 / height, "\n".join(lines), fontsize=12.5, fontweight="bold", color=INK, ha="left", va="top",
+             linespacing=1.15)
+    fig.text(0.02, 1 - (0.46 + TITLE_LINE_IN * (len(lines) - 1)) / height, subtitle, fontsize=9, color=MUTED,
+             ha="left", va="top")
 
 
 def _scale_bar(ax, extent, km: float = 50.0) -> None:
@@ -155,28 +178,33 @@ def _period_text(names: list[str]) -> str:
 
 
 def plot_value_map(item, raster: Path, atolls_ll: pd.DataFrame, mangrove_atolls: list[str], cmap_name: str,
-                   out: Path) -> Path:
-    """Continuous map: mean of the annual bands for the whole raster, atoll outlines on top."""
+                   out: Path, min_span: float | None = None) -> Path:
+    """Continuous map: mean of the annual bands for the whole raster, atoll outlines on top.
+
+    min_span: smallest range of the colour scale (see color_limits)."""
     data, (west, east, south, north), names = read_stack(raster)
     mean = np.ma.masked_invalid(data.mean(axis=0))
     unit = _axis_unit(item.unit)
     extent = (west - 0.1, east + 0.1, south - 0.1, north + 0.1)
-    height = 9.0 + HEAD_IN
+    lines = title_lines(item.name, 4.4)
+    head = header_height(lines)
+    height = 9.0 + head
+    vmin, vmax = color_limits(float(mean.min()), float(mean.max()), min_span)
     cmap = colormaps.get(cmap_name, colormaps["viridis"]).copy()
     with plt.rc_context({"font.family": "sans-serif", "font.sans-serif": ["Arial", "Liberation Sans", "DejaVu Sans"]}):
         fig, ax = plt.subplots(figsize=(4.4, height))
         image = ax.imshow(mean, extent=(west, east, south, north), origin="upper", cmap=cmap, interpolation="nearest",
-                          zorder=2)
+                          vmin=vmin, vmax=vmax, zorder=2)
         for row in atolls_ll.itertuples():
             has = row.atoll in mangrove_atolls
             gdf = atolls_ll[atolls_ll["atoll"] == row.atoll]
             gdf.boundary.plot(ax=ax, color=MANGROVE_EDGE if has else "#ffffff", linewidth=1.1 if has else 0.5, zorder=4,
                               alpha=1.0 if has else 0.8)
-        _frame(fig, ax, extent, item.name, f"Mean of annual values, {_period_text(names)}", height)
+        _frame(fig, ax, extent, lines, f"Mean of annual values, {_period_text(names)}", height)
         _scale_bar(ax, extent)
         _north_arrow(ax, extent)
         ax.set_anchor("W")
-        fig.tight_layout(rect=(0, 0.03, 1, 1 - HEAD_IN / height))
+        fig.tight_layout(rect=(0, 0.03, 1, 1 - head / height))
         cbar = fig.colorbar(image, ax=ax, shrink=0.45, aspect=22, pad=0.02)
         cbar.set_label(unit, fontsize=9, color=INK)
         cbar.ax.tick_params(labelsize=8, colors=MUTED)
@@ -189,14 +217,19 @@ def plot_value_map(item, raster: Path, atolls_ll: pd.DataFrame, mangrove_atolls:
     return path
 
 
-def plot_atoll_map(item, atoll_means: pd.Series, atolls_ll: pd.DataFrame, period: str, cmap_name: str, out: Path) -> Path:
-    """Atoll map: atolls with mangroves painted by the mean of the ECV, the other atolls in grey."""
+def plot_atoll_map(item, atoll_means: pd.Series, atolls_ll: pd.DataFrame, period: str, cmap_name: str, out: Path,
+                   min_span: float | None = None) -> Path:
+    """Atoll map: atolls with mangroves painted by the mean of the ECV, the other atolls in grey.
+
+    min_span: smallest range of the colour scale (see color_limits)."""
     unit = _axis_unit(item.unit)
     cmap = colormaps.get(cmap_name, colormaps["viridis"])
-    norm = Normalize(vmin=float(atoll_means.min()), vmax=float(atoll_means.max()))
+    norm = Normalize(*color_limits(float(atoll_means.min()), float(atoll_means.max()), min_span))
     west, south, east, north = atolls_ll.total_bounds
     extent = (west - 0.9, east + 0.9, south - 0.35, north + 0.35)
-    height = 9.0 + HEAD_IN
+    lines = title_lines(item.name, 5.6)
+    head = header_height(lines)
+    height = 9.0 + head
     with plt.rc_context({"font.family": "sans-serif", "font.sans-serif": ["Arial", "Liberation Sans", "DejaVu Sans"]}):
         fig, ax = plt.subplots(figsize=(5.6, height))
         for row in atolls_ll.itertuples():
@@ -204,12 +237,12 @@ def plot_atoll_map(item, atoll_means: pd.Series, atolls_ll: pd.DataFrame, period
             gdf = atolls_ll[atolls_ll["atoll"] == row.atoll]
             gdf.plot(ax=ax, facecolor=cmap(norm(atoll_means[row.atoll])) if has else NO_MANGROVE_FILL,
                      edgecolor=MANGROVE_EDGE if has else NO_MANGROVE_EDGE, linewidth=0.9 if has else 0.5, zorder=3)
-        _frame(fig, ax, extent, item.name, f"Atolls with mangroves coloured by the mean of annual values, {period}", height)
+        _frame(fig, ax, extent, lines, f"Atolls with mangroves coloured by the mean of annual values, {period}", height)
         _region_lines(ax, atolls_ll, extent[0], extent[1])
         _label_atolls(ax, atolls_ll, [a for a in atolls_ll["atoll"] if a not in NO_LABEL], 73.2)
         _scale_bar(ax, extent)
         _north_arrow(ax, extent)
-        fig.tight_layout(rect=(0, 0.03, 1, 1 - HEAD_IN / height))
+        fig.tight_layout(rect=(0, 0.03, 1, 1 - head / height))
         sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
         cbar = fig.colorbar(sm, ax=ax, shrink=0.45, aspect=22, pad=0.02)
         cbar.set_label(unit, fontsize=9, color=INK)
