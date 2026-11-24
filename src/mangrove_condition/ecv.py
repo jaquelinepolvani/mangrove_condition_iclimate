@@ -1,17 +1,19 @@
 """Essential climate variables (ECV): annual series per atoll, linear trend, figures and a short report.
 
 ECVs are context variables: they are not rescaled to scores and do not enter the index.
-For every ECV the module writes three figures, a trend table and a markdown report (README.md):
+For every ECV the module writes figures, a trend table and a markdown report (README.md):
 
 1. main atolls: one panel per atoll, for the atolls that hold most of the mangrove area, with a dashed linear trend;
 2. box plot: distribution of the annual values of the main atolls;
-3. all atolls with mangroves: one panel per atoll.
+3. and 4. maps (only when the ECV has a raster): long-term mean for the whole Maldives and by atoll;
+5. all atolls with mangroves, one panel per atoll (off by default, see SHOW_ALL_ATOLLS).
 
-The mean of the atolls with mangroves is used in the summary table of the report.
+The overall mean of the atolls with mangroves is used for the trend in the summary table of the report.
 """
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import matplotlib
@@ -31,6 +33,16 @@ MIN_YEARS = 8
 # The main atolls are the largest ones in mangrove area, added until they hold this share of the total.
 MAIN_AREA_SHARE = 0.90
 SIGNIFICANCE = 0.05
+SHOW_ALL_ATOLLS = False   # True adds one more figure per ECV with all atolls that have mangroves (last figure of the ECV)
+
+REPORT_TITLE = "iClimateAction WP3, Task 3.2: Nature-based Solutions and Ecosystems Demonstrator"
+REPORT_INTRO = (
+    "Task 3.2 of Work Package 3 of the iClimateAction project, funded by the European Commission and implemented by "
+    "WMO, GCOS and GEO, assesses the climate change vulnerability of ecosystems in the Maldives, in collaboration "
+    "with UNU-EHS. The assessment focuses on mangroves. This page presents the Essential Climate Variables (ECVs) "
+    "compiled for it: sea surface temperature, sea level, sea state, precipitation and near-surface air temperature."
+)
+MAP_WIDTH_PCT = 50        # width of each map in the report (two maps side by side)
 
 BLUE = "#1f6fae"
 INK = "#222222"
@@ -243,7 +255,7 @@ def plot_box(item: EcvSpec, annual: pd.DataFrame, atolls: list[str], out: Path) 
 
 def _md_table(trends: pd.DataFrame, unit: str) -> str:
     base = _base_unit(unit)
-    head = (f"| Atoll | Mangrove area (km2) | Period | Mean ({_axis_unit(unit)}) | Trend ({base} per decade) | p |\n"
+    head = (f"| Atoll | Mangrove area (km2) | Period | Long-term mean ({_axis_unit(unit)}) | Trend ({base} per decade) | p |\n"
             "|---|---|---|---|---|---|\n")
     rows = []
     for r in trends.itertuples():
@@ -255,27 +267,39 @@ def _md_table(trends: pd.DataFrame, unit: str) -> str:
     return head + "\n".join(rows)
 
 
+def _split_name(name: str) -> tuple[str, str]:
+    """'Variable (source)' into variable and source. Without parentheses the source is empty."""
+    found = re.match(r"^(.*?)\s*\(([^()]*)\)\s*$", name)
+    return (found.group(1), found.group(2)) if found else (name, "")
+
+
 def write_report(folder: Path, sections: list[dict], atolls: list[str], main: list[str], area: pd.Series) -> Path:
     share = area[main].sum() / area.sum()
     lines = [
-        "# Essential climate variables (ECV)",
+        f"# {REPORT_TITLE}",
+        "",
+        REPORT_INTRO,
         "",
         "## How to read the figures",
         "",
         f"- **Atolls with mangroves:** {len(atolls)} ({', '.join(atolls)}). Mangrove extent: Cerri 2020.",
         f"- **Main atolls:** {', '.join(main)}. Together they hold {share:.0%} of the mangrove area.",
-        "- **Mean:** simple mean of the atolls with mangroves, in years where all of them have a value.",
+        "- **Overall mean:** mean of the atolls with mangroves, in years where all of them have a value. "
+        "Used in the summary table.",
+        "- **Long-term mean:** mean of the annual values of one atoll over the whole period. "
+        "Used in the atoll tables and in the maps.",
         "- **Dashed line:** linear trend (least squares) of the annual values. A trend is called significant when p < 0.05.",
         "",
         "## Summary",
         "",
-        "| ECV | Source file | Period of the mean | Unit | Trend of the mean (per decade) | p |",
-        "|---|---|---|---|---|---|",
+        "| Variable | Source | Period | Unit | Trend per decade |",
+        "|---|---|---|---|---|",
     ]
     for s in sections:
-        lines.append(f"| [{s['name']}](#{s['anchor']}) | {s['file']} | {s['period']} | {s['unit_label']} | "
-                     f"{s['agg_trend']} | {s['agg_p']} |")
-    lines.append("")
+        variable, source = _split_name(s["name"])
+        lines.append(f"| [{variable}](#{s['anchor']}) | {source} | {s['period']} | {s['unit_label']} | {s['agg_trend']} |")
+    lines += ["", f"Trend of the overall mean of the {len(atolls)} atolls with mangroves, over the period shown. "
+                  "Bold: significant (p < 0.05).", ""]
     figure, table = 0, 0
     for s in sections:
         lines += [f"## {s['name']}", ""]
@@ -284,22 +308,39 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
                               "(dashed) and trend per decade."),
             ("2_boxplot", f"distribution of the annual values in the {len(main)} atolls with the most mangrove area. "
                           "Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years."),
-            ("3_all_atolls", f"annual values in all {len(atolls)} atolls with mangroves, with linear trend (dashed) and "
-                             "trend per decade."),
         ]
         if s.get("maps"):
-            captions += [
-                ("4_map_mean", f"mean of the annual values for the whole Maldives ({s['map_period']}). Outlines: atolls; "
-                               "dark outline: atolls with mangroves."),
-                ("5_map_atolls", f"mean of the annual values by atoll ({s['map_period']}). Colour: atolls with mangroves; "
-                                 "grey: atolls without mangroves in the Cerri 2020 extent."),
+            maps = [
+                ("3_map_mean", f"long-term mean of the annual values for the whole Maldives ({s['map_period']}). "
+                               "Outlines: atolls; dark outline: atolls with mangroves."),
+                ("4_map_atolls", f"long-term mean of the annual values by atoll ({s['map_period']}). Colour: atolls with "
+                                 "mangroves; grey: atolls without mangroves in the Cerri 2020 extent."),
             ]
+        else:
+            maps = []
+        if SHOW_ALL_ATOLLS:
+            extra = [("5_all_atolls", f"annual values in all {len(atolls)} atolls with mangroves, with linear trend "
+                                      "(dashed) and trend per decade.")]
+        else:
+            extra = []
         for suffix, text in captions:
             figure += 1
             lines += [f"![{s['name']}, figure {figure}](figures/{s['id']}_{suffix}.png)", "",
                       f"**Figure {figure}.** {s['name']}: {text}", ""]
+        if maps:
+            cells = []
+            for suffix, text in maps:
+                figure += 1
+                cells.append(f'<td width="{MAP_WIDTH_PCT}%" valign="top"><img src="figures/{s["id"]}_{suffix}.png" '
+                             f'alt="{s["name"]}, figure {figure}" width="100%"><br><b>Figure {figure}.</b> '
+                             f'{s["name"]}: {text}</td>')
+            lines += ["<table><tr>", *cells, "</tr></table>", ""]
+        for suffix, text in extra:
+            figure += 1
+            lines += [f"![{s['name']}, figure {figure}](figures/{s['id']}_{suffix}.png)", "",
+                      f"**Figure {figure}.** {s['name']}: {text}", ""]
         table += 1
-        lines += [f"**Table {table}.** {s['name']}: mean and linear trend by atoll, largest mangrove area first. "
+        lines += [f"**Table {table}.** {s['name']}: long-term mean and linear trend by atoll, largest mangrove area first. "
                   "Bold: significant (p < 0.05).", "", s["table"], ""]
         if s["note"]:
             lines += [s["note"], ""]
@@ -332,8 +373,9 @@ def read_ecv_rasters(config_path: Path | None) -> dict[str, str]:
 
 
 def _anchor(name: str) -> str:
-    keep = "".join(c.lower() if c.isalnum() else "-" for c in name)
-    return "-".join(part for part in keep.split("-") if part)
+    """Heading anchor as GitHub builds it: lower case, punctuation removed, spaces become hyphens."""
+    kept = "".join(c for c in name.lower() if c.isalnum() or c in " -_")
+    return kept.replace(" ", "-")
 
 
 def run_ecv(config: Config, base_dir: Path, units: Units, out_dir: Path, log=print,
@@ -361,8 +403,9 @@ def run_ecv(config: Config, base_dir: Path, units: Units, out_dir: Path, log=pri
         files.append(plot_panels(item, annual, main, f"Annual values in the {len(main)} atolls with the most mangrove area, "
                                  "with linear trend", 3, figures, "1_main_atolls"))
         files.append(plot_box(item, annual, main, figures))
-        files.append(plot_panels(item, annual, atolls, f"Annual values in the {len(atolls)} atolls with mangroves, "
-                                 "with linear trend", 4, figures, "3_all_atolls"))
+        if SHOW_ALL_ATOLLS:
+            files.append(plot_panels(item, annual, atolls, f"Annual values in the {len(atolls)} atolls with mangroves, "
+                                     "with linear trend", 4, figures, "5_all_atolls"))
         fit = linear_trend(series["year"].to_numpy(float), series["value"].to_numpy(float))
         dropped = sorted(set(_used(annual)["year"]) - set(series["year"]))
         note = ""
@@ -371,10 +414,9 @@ def run_ecv(config: Config, base_dir: Path, units: Units, out_dir: Path, log=pri
         significant = not np.isnan(fit["p"]) and fit["p"] < SIGNIFICANCE
         trend_text = "n/a" if np.isnan(fit["slope"]) else f"{fit['slope'] * 10:+.3g} {_base_unit(item.unit or '')}".strip()
         section = {
-            "id": item.id, "name": item.name, "anchor": _anchor(item.name), "unit_label": _axis_unit(item.unit), "file": item.file,
+            "id": item.id, "name": item.name, "anchor": _anchor(item.name), "unit_label": _axis_unit(item.unit),
             "period": f"{int(series['year'].min())} to {int(series['year'].max())}" if len(series) else "n/a",
             "agg_trend": f"**{trend_text}**" if significant else trend_text,
-            "agg_p": _p_text(fit["p"]).replace("p = ", "").replace("p < ", "< ").replace("p n/a", "n/a"),
             "table": _md_table(trends, item.unit or ""), "note": note, "maps": False,
         }
         if item.id in rasters:

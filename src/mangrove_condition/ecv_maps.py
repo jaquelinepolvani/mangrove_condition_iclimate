@@ -181,7 +181,7 @@ def plot_value_map(item, raster: Path, atolls_ll: pd.DataFrame, mangrove_atolls:
         cbar.set_label(unit, fontsize=9, color=INK)
         cbar.ax.tick_params(labelsize=8, colors=MUTED)
         cbar.outline.set_edgecolor(MUTED)
-        path = Path(out) / f"{item.id}_4_map_mean.png"
+        path = Path(out) / f"{item.id}_3_map_mean.png"
         fig.savefig(path, dpi=300, facecolor="white")
         (Path(out) / "vector").mkdir(exist_ok=True)
         fig.savefig(Path(out) / "vector" / f"{path.stem}.pdf", facecolor="white")
@@ -215,7 +215,7 @@ def plot_atoll_map(item, atoll_means: pd.Series, atolls_ll: pd.DataFrame, period
         cbar.set_label(unit, fontsize=9, color=INK)
         cbar.ax.tick_params(labelsize=8, colors=MUTED)
         cbar.outline.set_edgecolor(MUTED)
-        path = Path(out) / f"{item.id}_5_map_atolls.png"
+        path = Path(out) / f"{item.id}_4_map_atolls.png"
         fig.savefig(path, dpi=300, facecolor="white")
         (Path(out) / "vector").mkdir(exist_ok=True)
         fig.savefig(Path(out) / "vector" / f"{path.stem}.pdf", facecolor="white")

@@ -47,7 +47,7 @@ def test_maps_are_written(tmp_path):
     means = pd.Series({"Haa Alifu": 0.8, "Kaafu": 0.82})
     second = ecv_maps.plot_atoll_map(_spec(), means, atolls, "2000 to 2002", "viridis", tmp_path)
     assert first.exists() and second.exists()
-    assert (tmp_path / "vector" / "ECV_T_4_map_mean.pdf").exists()
+    assert (tmp_path / "vector" / "ECV_T_3_map_mean.pdf").exists()
 
 
 def test_regions_and_label_rules():
