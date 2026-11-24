@@ -108,11 +108,45 @@ def test_how_to_read_comes_after_the_summary_and_has_no_mean_definitions(tmp_pat
     assert "Overall mean" not in text and "Long-term mean" not in text and "**Mean:**" not in text
 
 
-def test_summary_shows_metres_as_millimetres():
-    assert ecv._summary_trend(-0.0279, "m") == "-27.9 mm"
+def test_summary_trend_keeps_the_unit_of_the_data():
+    assert ecv._summary_trend(-0.0279, "m") == "-0.0279 m"
     assert ecv._summary_trend(0.179, "\u00b0C") == "+0.179 \u00b0C"
-    assert ecv._summary_trend(-101.0, "mm") == "-101 mm"
+    assert ecv._summary_trend(-101.4, "mm") == "-101 mm"
     assert ecv._summary_trend(float("nan"), "m") == "n/a"
+
+
+def test_decimal_places_are_fixed_by_unit():
+    assert ecv._num(28.0, "\u00b0C", "mean") == "28.00"
+    assert ecv._num(0.18, "\u00b0C", "trend", sign=True) == "+0.180"
+    assert ecv._num(0.8231, "m", "mean") == "0.823"
+    assert ecv._num(0.0406, "m", "trend", sign=True) == "+0.0406"
+    assert ecv._num(-20.3, "mm", "trend", sign=True) == "-20"
+    assert ecv._num(1828.4, "mm", "mean") == "1828"
+    assert ecv._num(12.3456, "kg", "mean") == "12.3"
+
+
+def test_axis_label_names_the_variable_and_the_unit():
+    from mangrove_condition.ecv_maps import axis_label
+
+    assert axis_label("Sea level, absolute dynamic topography (Copernicus Marine)", "m") == "Sea level (m)"
+    assert axis_label("Sea surface temperature (ESA CCI)", "degC") == "Sea surface temperature (\u00b0C)"
+    assert axis_label("Precipitation (CHIRPS v2.0)", "mm per year") == "Precipitation (mm per year)"
+
+
+def test_captions_do_not_repeat_the_variable_name_and_area_has_a_superscript(tmp_path):
+    text = _report(tmp_path, _section(maps=True))
+    assert "**Figure 1.** Annual values in the 2 atolls" in text
+    assert "**Table 1.** Mean of the annual values" in text
+    assert "Test variable (Test source): " not in text
+    area = pd.Series({"A": 0.5, "B": 0.3, "C": 0.2})
+    assert "Mangrove area (km\u00b2)" in ecv._md_table(ecv.trend_table(_spec(), _annual(), area, ["A", "B"]), "m")
+
+
+def test_references_are_written_only_when_given(tmp_path, monkeypatch):
+    assert "## References" not in _report(tmp_path, _section())
+    monkeypatch.setattr(ecv, "REPORT_REFERENCES", ["Author, A. (2020). Title. Journal."])
+    text = _report(tmp_path, _section())
+    assert text.rstrip().endswith("- Author, A. (2020). Title. Journal.") and "## References" in text
 
 
 def test_maps_sit_side_by_side_and_all_atolls_figure_is_off_by_default(tmp_path):

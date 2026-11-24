@@ -25,6 +25,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from scipy import stats  # noqa: E402
 
+from .ecv_maps import axis_label, split_name  # noqa: E402
 from .schema import Config, EcvSpec  # noqa: E402
 from .tables import ecv_annual  # noqa: E402
 from .units import Units, study_atoll_names  # noqa: E402
@@ -42,6 +43,7 @@ REPORT_INTRO = (
     "with UNU-EHS. The assessment focuses on mangroves. This page presents the Essential Climate Variables (ECVs) "
     "compiled for it: sea surface temperature, sea level, sea state, precipitation and near-surface air temperature."
 )
+REPORT_REFERENCES: list[str] = []   # full references, one per entry; written under 'References' when not empty
 MAP_WIDTH_PCT = 50        # width of each map in the report (two maps side by side)
 
 BLUE = "#1f6fae"
@@ -136,6 +138,21 @@ def _base_unit(unit: str) -> str:
     return "\u00b0C" if base == "degC" else base
 
 
+# Decimal places by unit, as (mean, trend). The same rule is used in the tables, the summary and the panel titles.
+DECIMALS = {"\u00b0C": (2, 3), "m": (3, 4), "mm": (0, 0)}
+
+
+def _num(value: float, base_unit: str, kind: str, sign: bool = False) -> str:
+    """A number with the decimal places of its unit. kind is 'mean' or 'trend'. Other units get three digits."""
+    if np.isnan(value):
+        return "n/a"
+    places = DECIMALS.get(base_unit)
+    sgn = "+" if sign else ""
+    if places is None:
+        return f"{value:{sgn}.3g}"
+    return f"{value:{sgn}.{places[0 if kind == 'mean' else 1]}f}"
+
+
 def _axis_unit(unit: str) -> str:
     return "\u00b0C" if (unit or "") == "degC" else (unit or "")
 
@@ -186,7 +203,7 @@ def _save(fig, path: Path) -> Path:
 def plot_panels(item: EcvSpec, annual: pd.DataFrame, atolls: list[str], subtitle: str, ncols: int, out: Path,
                 suffix: str) -> Path:
     """One panel per atoll: annual values as a line and the dashed linear trend."""
-    unit, base = _axis_unit(item.unit), _base_unit(item.unit)
+    base = _base_unit(item.unit)
     nrows = int(np.ceil(len(atolls) / ncols))
     height = 2.3 * nrows + HEAD_IN + FOOT_IN
     with plt.rc_context(STYLE):
@@ -207,10 +224,10 @@ def plot_panels(item: EcvSpec, annual: pd.DataFrame, atolls: list[str], subtitle
             ax.set_title(atoll, loc="left", fontsize=9.5, fontweight="bold", color=INK, pad=6)
             if not np.isnan(fit["slope"]):
                 significant = fit["p"] < SIGNIFICANCE
-                ax.set_title(f"{fit['slope'] * 10:+.3g} {base} per decade" + ("" if significant else " (n.s.)"),
+                ax.set_title(f"{_num(fit['slope'] * 10, base, 'trend', sign=True)} {base} per decade" + ("" if significant else " (n.s.)"),
                              loc="right", fontsize=7.5, color=INK if significant else MUTED, pad=6)
         for ax in axes[:, 0]:
-            ax.set_ylabel(unit)
+            ax.set_ylabel(axis_label(item.name, item.unit))
         for i, ax in enumerate(flat[:len(atolls)]):
             if i + ncols >= len(atolls):  # last panel of its column: it carries the year labels
                 ax.tick_params(labelbottom=True)
@@ -229,7 +246,6 @@ def plot_panels(item: EcvSpec, annual: pd.DataFrame, atolls: list[str], subtitle
 
 def plot_box(item: EcvSpec, annual: pd.DataFrame, atolls: list[str], out: Path) -> Path:
     """One box per atoll: the distribution of its annual values over the whole period."""
-    unit = _axis_unit(item.unit)
     data = [_used(annual[annual["unit"] == a])["value"].to_numpy(float) for a in atolls]
     height = 3.4 + HEAD_IN
     with plt.rc_context(STYLE):
@@ -245,7 +261,7 @@ def plot_box(item: EcvSpec, annual: pd.DataFrame, atolls: list[str], out: Path) 
         ax.set_xticks(range(1, len(atolls) + 1), atolls)
         _style_axes(ax)
         ax.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(range(1, len(atolls) + 1)))
-        ax.set_ylabel(unit)
+        ax.set_ylabel(axis_label(item.name, item.unit))
         _header(fig, item.name, f"Distribution of annual values in the {len(atolls)} atolls with the most mangrove area", height)
         fig.tight_layout(rect=(0, 0.02, 1, 1 - HEAD_IN / height))
         return _save(fig, Path(out) / f"{item.id}_2_boxplot.png")
@@ -255,31 +271,24 @@ def plot_box(item: EcvSpec, annual: pd.DataFrame, atolls: list[str], out: Path) 
 
 def _md_table(trends: pd.DataFrame, unit: str) -> str:
     base = _base_unit(unit)
-    head = (f"| Atoll | Mangrove area (km2) | Period | Mean ({_axis_unit(unit)}) | Trend ({base} per decade) | p |\n"
+    head = (f"| Atoll | Mangrove area (km\u00b2) | Period | Mean ({_axis_unit(unit)}) | Trend ({base} per decade) | p |\n"
             "|---|---|---|---|---|---|\n")
     rows = []
     for r in trends.itertuples():
         p = "n/a" if np.isnan(r.p_value) else ("< 0.001" if r.p_value < 0.001 else f"{r.p_value:.3f}")
-        slope = "n/a" if np.isnan(r.slope_per_decade) else f"{r.slope_per_decade:+.3g}"
+        slope = _num(r.slope_per_decade, base, "trend", sign=True)
         bold = "**" if (not np.isnan(r.p_value) and r.p_value < SIGNIFICANCE) else ""
-        rows.append(f"| {r.atoll} | {r.mangrove_area_km2:.3f} | {r.first_year} to {r.last_year} | {r.mean:.4g} | "
-                    f"{bold}{slope}{bold} | {p} |")
+        rows.append(f"| {r.atoll} | {r.mangrove_area_km2:.3f} | {r.first_year} to {r.last_year} | "
+                    f"{_num(r.mean, base, 'mean')} | {bold}{slope}{bold} | {p} |")
     return head + "\n".join(rows)
 
 
 def _summary_trend(per_decade: float, base_unit: str) -> str:
-    """Trend text of the summary table. Metres are shown as millimetres, which reads better for small trends."""
-    if np.isnan(per_decade):
-        return "n/a"
-    if base_unit == "m":
-        per_decade, base_unit = per_decade * 1000, "mm"
-    return f"{per_decade:+.3g} {base_unit}".strip()
+    """Trend text of the summary table, in the unit of the data."""
+    return "n/a" if np.isnan(per_decade) else f"{_num(per_decade, base_unit, 'trend', sign=True)} {base_unit}".strip()
 
 
-def _split_name(name: str) -> tuple[str, str]:
-    """'Variable (source)' into variable and source. Without parentheses the source is empty."""
-    found = re.match(r"^(.*?)\s*\(([^()]*)\)\s*$", name)
-    return (found.group(1), found.group(2)) if found else (name, "")
+_split_name = split_name
 
 
 def write_report(folder: Path, sections: list[dict], atolls: list[str], main: list[str], area: pd.Series) -> Path:
@@ -321,11 +330,11 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
         if s.get("maps"):
             maps = [
                 ("3_map_mean", f"mean of the annual values for the whole Maldives ({s['map_period']}). "
-                               "Outlines: atolls; dark outline: atolls with mangroves. The colour scale spans at least the range of "
-                               "the annual values over time."),
+                               "Outlines: atolls; dark outline: atolls with mangroves. The colour scale runs from the "
+                               "lowest to the highest value in the map."),
                 ("4_map_atolls", f"mean of the annual values by atoll ({s['map_period']}). Colour: atolls with "
-                                 "mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale spans at least "
-                                 "the range of the annual values over time."),
+                                 "mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale "
+                                 "runs from the lowest to the highest atoll mean."),
             ]
         else:
             maps = []
@@ -337,24 +346,26 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
         for suffix, text in captions:
             figure += 1
             lines += [f"![{s['name']}, figure {figure}](figures/{s['id']}_{suffix}.png)", "",
-                      f"**Figure {figure}.** {s['name']}: {text}", ""]
+                      f"**Figure {figure}.** {text[0].upper()}{text[1:]}", ""]
         if maps:
             cells = []
             for suffix, text in maps:
                 figure += 1
                 cells.append(f'<td width="{MAP_WIDTH_PCT}%" valign="top"><img src="figures/{s["id"]}_{suffix}.png" '
                              f'alt="{s["name"]}, figure {figure}" width="100%"><br><b>Figure {figure}.</b> '
-                             f'{s["name"]}: {text}</td>')
+                             f'{text[0].upper()}{text[1:]}</td>')
             lines += ["<table><tr>", *cells, "</tr></table>", ""]
         for suffix, text in extra:
             figure += 1
             lines += [f"![{s['name']}, figure {figure}](figures/{s['id']}_{suffix}.png)", "",
-                      f"**Figure {figure}.** {s['name']}: {text}", ""]
+                      f"**Figure {figure}.** {text[0].upper()}{text[1:]}", ""]
         table += 1
-        lines += [f"**Table {table}.** {s['name']}: mean of the annual values and linear trend by atoll, largest mangrove area first. "
+        lines += [f"**Table {table}.** Mean of the annual values and linear trend by atoll, largest mangrove area first. "
                   "Bold: significant (p < 0.05).", "", s["table"], ""]
         if s["note"]:
             lines += [s["note"], ""]
+    if REPORT_REFERENCES:
+        lines += ["## References", "", *[f"- {ref}" for ref in REPORT_REFERENCES], ""]
     path = Path(folder) / "README.md"
     path.write_text("\n".join(lines), encoding="utf-8")
     return path
@@ -421,7 +432,8 @@ def run_ecv(config: Config, base_dir: Path, units: Units, out_dir: Path, log=pri
         dropped = sorted(set(_used(annual)["year"]) - set(series["year"]))
         note = ""
         if item.exclude_years:
-            note = f"Years left out of the trends: {', '.join(str(y) for y in item.exclude_years)}."
+            note = (f"Years left out of the trends and the means (possible data problem): "
+                    f"{', '.join(str(y) for y in item.exclude_years)}.")
         significant = not np.isnan(fit["p"]) and fit["p"] < SIGNIFICANCE
         trend_text = _summary_trend(fit["slope"] * 10, _base_unit(item.unit or ""))
         section = {
@@ -443,11 +455,8 @@ def run_ecv(config: Config, base_dir: Path, units: Units, out_dir: Path, log=pri
                 means = _used(annual[annual["unit"].isin(atolls)]).groupby("unit")["value"].mean()
                 _, _, names = ecv_maps.read_stack(raster_path)
                 period = ecv_maps._period_text(names)
-                # The colour scale covers at least the range of the annual values over time (year to year changes),
-                # so that small differences between places do not look large.
-                span = float(series["value"].max() - series["value"].min()) if len(series) > 1 else None
-                files.append(ecv_maps.plot_value_map(item, raster_path, atolls_ll, atolls, cmap_name, figures, span))
-                files.append(ecv_maps.plot_atoll_map(item, means, atolls_ll, section["period"], cmap_name, figures, span))
+                files.append(ecv_maps.plot_value_map(item, raster_path, atolls_ll, atolls, cmap_name, figures))
+                files.append(ecv_maps.plot_atoll_map(item, means, atolls_ll, section["period"], cmap_name, figures))
                 section["maps"], section["map_period"] = True, period
         sections.append(section)
         log(f"  {item.id}: {series['year'].nunique()} years in the aggregate"

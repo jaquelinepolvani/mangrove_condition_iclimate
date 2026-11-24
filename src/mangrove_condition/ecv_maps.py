@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import textwrap
 from pathlib import Path
 
@@ -35,6 +36,19 @@ LABEL_SIDE = {"Shaviyani": "right"}  # keeps the name away from the small island
 HEAD_IN = 0.75
 TITLE_CHARS_PER_INCH = 8.0   # about how many characters of the bold title fit in one inch of figure width
 TITLE_LINE_IN = 0.22         # extra header height for every additional title line
+
+
+def split_name(name: str) -> tuple[str, str]:
+    """'Variable (source)' into variable and source. Without parentheses the source is empty."""
+    found = re.match(r"^(.*?)\s*\(([^()]*)\)\s*$", name)
+    return (found.group(1), found.group(2)) if found else (name, "")
+
+
+def axis_label(name: str, unit: str | None) -> str:
+    """Label of a value axis or colour bar: the short variable name and the unit, e.g. 'Sea level (m)'.
+    A bare unit such as 'm' is easily misread when it is turned sideways."""
+    variable = split_name(name)[0].split(",")[0].strip()
+    return f"{variable} ({_axis_unit(unit)})"
 
 
 def title_lines(title: str, width_in: float) -> list[str]:
@@ -184,7 +198,6 @@ def plot_value_map(item, raster: Path, atolls_ll: pd.DataFrame, mangrove_atolls:
     min_span: smallest range of the colour scale (see color_limits)."""
     data, (west, east, south, north), names = read_stack(raster)
     mean = np.ma.masked_invalid(data.mean(axis=0))
-    unit = _axis_unit(item.unit)
     extent = (west - 0.1, east + 0.1, south - 0.1, north + 0.1)
     lines = title_lines(item.name, 4.4)
     head = header_height(lines)
@@ -206,7 +219,7 @@ def plot_value_map(item, raster: Path, atolls_ll: pd.DataFrame, mangrove_atolls:
         ax.set_anchor("W")
         fig.tight_layout(rect=(0, 0.03, 1, 1 - head / height))
         cbar = fig.colorbar(image, ax=ax, shrink=0.45, aspect=22, pad=0.02)
-        cbar.set_label(unit, fontsize=9, color=INK)
+        cbar.set_label(axis_label(item.name, item.unit), fontsize=9, color=INK)
         cbar.ax.tick_params(labelsize=8, colors=MUTED)
         cbar.outline.set_edgecolor(MUTED)
         path = Path(out) / f"{item.id}_3_map_mean.png"
@@ -222,7 +235,6 @@ def plot_atoll_map(item, atoll_means: pd.Series, atolls_ll: pd.DataFrame, period
     """Atoll map: atolls with mangroves painted by the mean of the ECV, the other atolls in grey.
 
     min_span: smallest range of the colour scale (see color_limits)."""
-    unit = _axis_unit(item.unit)
     cmap = colormaps.get(cmap_name, colormaps["viridis"])
     norm = Normalize(*color_limits(float(atoll_means.min()), float(atoll_means.max()), min_span))
     west, south, east, north = atolls_ll.total_bounds
@@ -245,7 +257,7 @@ def plot_atoll_map(item, atoll_means: pd.Series, atolls_ll: pd.DataFrame, period
         fig.tight_layout(rect=(0, 0.03, 1, 1 - head / height))
         sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
         cbar = fig.colorbar(sm, ax=ax, shrink=0.45, aspect=22, pad=0.02)
-        cbar.set_label(unit, fontsize=9, color=INK)
+        cbar.set_label(axis_label(item.name, item.unit), fontsize=9, color=INK)
         cbar.ax.tick_params(labelsize=8, colors=MUTED)
         cbar.outline.set_edgecolor(MUTED)
         path = Path(out) / f"{item.id}_4_map_atolls.png"
