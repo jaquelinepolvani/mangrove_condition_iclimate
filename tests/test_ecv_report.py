@@ -165,3 +165,12 @@ def test_anchor_follows_the_github_rule():
     assert ecv._anchor("Sea level, absolute dynamic topography (Copernicus Marine)") == \
         "sea-level-absolute-dynamic-topography-copernicus-marine"
     assert ecv._anchor("Precipitation (CHIRPS v2.0, provisional)") == "precipitation-chirps-v20-provisional"
+
+
+def test_report_points_to_download_files_and_explains_box_plot_once(tmp_path):
+    text = _report(tmp_path, _section())
+    assert "## Files for download" in text
+    for name in ("ecv_annual.xlsx", "ecv_trends.xlsx", "figures/vector"):
+        assert f"]({name})" in text
+    assert "middle half" not in text
+    assert text.count("Bold:") == 1

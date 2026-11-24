@@ -175,28 +175,45 @@ def _region_lines(ax, polys: pd.DataFrame, west: float, east: float) -> None:
                 color=MUTED, zorder=2)
 
 
-def read_stack(path: Path) -> tuple[np.ndarray, tuple[float, float, float, float], list[str]]:
-    """All bands of a raster (annual bands) as a masked stack, its extent (west, east, south, north) and band names."""
+def read_stack(path: Path, exclude_years=()) -> tuple[np.ndarray, tuple[float, float, float, float], list[str]]:
+    """Annual bands of a raster as a masked stack, its extent (west, east, south, north) and band names.
+
+    Bands of the years in exclude_years are left out, as in the tables and the trends."""
     with rasterio.open(path) as src:
         if src.crs is None or src.crs.to_epsg() != 4326:
             raise ValueError(f"{Path(path).name}: the map code expects longitude and latitude (EPSG:4326).")
         data = src.read(masked=True)
         b = src.bounds
         names = [d or "" for d in src.descriptions]
+    skip = {str(y) for y in exclude_years}
+    keep = [i for i, n in enumerate(names) if n.strip() not in skip]
+    if len(keep) < len(names):
+        data, names = data[keep], [names[i] for i in keep]
     return data, (b.left, b.right, b.bottom, b.top), names
 
 
-def _period_text(names: list[str]) -> str:
+def _period_text(names: list[str], excluded=()) -> str:
     years = [int(n) for n in names if n.strip().isdigit()]
-    return f"{min(years)} to {max(years)}" if years else f"{len(names)} annual bands"
+    text = f"{min(years)} to {max(years)}" if years else f"{len(names)} annual bands"
+    if excluded:
+        text += f", without {', '.join(str(y) for y in excluded)}"
+    return text
+
+
+def map_limits(raster: Path, exclude_years=()) -> tuple[float, float]:
+    """Lowest and highest value of the mean map. Both maps of an ECV use these limits for their colour scale."""
+    data, _, _ = read_stack(raster, exclude_years)
+    mean = np.ma.masked_invalid(data.mean(axis=0))
+    return float(mean.min()), float(mean.max())
 
 
 def plot_value_map(item, raster: Path, atolls_ll: pd.DataFrame, mangrove_atolls: list[str], cmap_name: str,
-                   out: Path, min_span: float | None = None) -> Path:
+                   out: Path, min_span: float | None = None, exclude_years=()) -> Path:
     """Continuous map: mean of the annual bands for the whole raster, atoll outlines on top.
 
-    min_span: smallest range of the colour scale (see color_limits)."""
-    data, (west, east, south, north), names = read_stack(raster)
+    exclude_years: years left out of the mean. min_span: smallest range of the colour scale (see color_limits)."""
+    data, (west, east, south, north), names = read_stack(raster, exclude_years)
+    excluded = [y for y in exclude_years if str(y) in {n.strip() for n in read_stack(raster)[2]}]
     mean = np.ma.masked_invalid(data.mean(axis=0))
     extent = (west - 0.1, east + 0.1, south - 0.1, north + 0.1)
     lines = title_lines(item.name, 4.4)
@@ -213,7 +230,7 @@ def plot_value_map(item, raster: Path, atolls_ll: pd.DataFrame, mangrove_atolls:
             gdf = atolls_ll[atolls_ll["atoll"] == row.atoll]
             gdf.boundary.plot(ax=ax, color=MANGROVE_EDGE if has else "#ffffff", linewidth=1.1 if has else 0.5, zorder=4,
                               alpha=1.0 if has else 0.8)
-        _frame(fig, ax, extent, lines, f"Mean of annual values, {_period_text(names)}", height)
+        _frame(fig, ax, extent, lines, f"Mean of annual values, {_period_text(names, excluded)}", height)
         _scale_bar(ax, extent)
         _north_arrow(ax, extent)
         ax.set_anchor("W")
@@ -231,12 +248,16 @@ def plot_value_map(item, raster: Path, atolls_ll: pd.DataFrame, mangrove_atolls:
 
 
 def plot_atoll_map(item, atoll_means: pd.Series, atolls_ll: pd.DataFrame, period: str, cmap_name: str, out: Path,
-                   min_span: float | None = None) -> Path:
+                   min_span: float | None = None, limits: tuple[float, float] | None = None) -> Path:
     """Atoll map: atolls with mangroves painted by the mean of the ECV, the other atolls in grey.
 
-    min_span: smallest range of the colour scale (see color_limits)."""
+    limits: lowest and highest value of the colour scale, normally those of the continuous map (see map_limits).
+    Without limits the scale runs over the atoll means; min_span is then the smallest range (see color_limits)."""
     cmap = colormaps.get(cmap_name, colormaps["viridis"])
-    norm = Normalize(*color_limits(float(atoll_means.min()), float(atoll_means.max()), min_span))
+    if limits is not None:
+        norm = Normalize(*limits)
+    else:
+        norm = Normalize(*color_limits(float(atoll_means.min()), float(atoll_means.max()), min_span))
     west, south, east, north = atolls_ll.total_bounds
     extent = (west - 0.9, east + 0.9, south - 0.35, north + 0.35)
     lines = title_lines(item.name, 5.6)

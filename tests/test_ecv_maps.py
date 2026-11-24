@@ -1,3 +1,4 @@
+import pytest
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -68,3 +69,33 @@ def test_long_title_is_wrapped_and_header_grows():
     assert len(short) == 1 and len(long) >= 2
     assert all(len(line) <= int(4.4 * ecv_maps.TITLE_CHARS_PER_INCH) for line in long)
     assert ecv_maps.header_height(long) > ecv_maps.header_height(short)
+
+
+def test_excluded_years_are_left_out_of_stack_and_limits(tmp_path):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+
+    path = tmp_path / "r.tif"
+    data = np.stack([np.full((4, 4), v, "float32") for v in (1.0, 1.0, 9.0)])
+    with rasterio.open(path, "w", driver="GTiff", height=4, width=4, count=3, dtype="float32", crs="EPSG:4326",
+                       transform=from_origin(73, 1, 0.1, 0.1)) as dst:
+        dst.write(data)
+        dst.descriptions = ("2000", "2001", "2002")
+    stack, _, names = ecv_maps.read_stack(path, [2002])
+    assert names == ["2000", "2001"] and stack.shape[0] == 2
+    assert ecv_maps.map_limits(path, [2002]) == (1.0, 1.0)
+    assert ecv_maps.map_limits(path) == pytest.approx((11 / 3, 11 / 3))
+    assert ecv_maps._period_text(names, [2002]) == "2000 to 2001, without 2002"
+
+
+def test_atoll_map_accepts_shared_limits(tmp_path):
+    import pandas as pd
+    from shapely.geometry import box
+    import geopandas as gpd
+
+    atolls = gpd.GeoDataFrame({"atoll": ["Haa Alifu", "Kaafu"], "geometry": [box(72.8, 6.5, 73.1, 6.9), box(73.3, 3.9, 73.7, 4.4)]},
+                              crs=4326)
+    out = ecv_maps.plot_atoll_map(_spec(), pd.Series({"Haa Alifu": 1.0, "Kaafu": 2.0}), atolls, "2000 to 2002",
+                                  "viridis", tmp_path, limits=(0.0, 10.0))
+    assert out.exists()

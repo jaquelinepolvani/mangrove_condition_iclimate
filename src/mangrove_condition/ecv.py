@@ -309,13 +309,20 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
     lines += [
         "",
         f"Trend of the average of the {len(atolls)} atolls with mangroves, in years where all of them have a value, "
-        "over the period shown. Bold: significant (p < 0.05).",
+        "over the period shown.",
         "",
         "## How to read the figures",
         "",
         f"- **Atolls with mangroves:** {len(atolls)} ({', '.join(atolls)}). Mangrove extent: Cerri 2020.",
         f"- **Main atolls:** {', '.join(main)}. Together they hold {share:.0%} of the mangrove area.",
-        "- **Dashed line:** linear trend (least squares) of the annual values. A trend is called significant when p < 0.05.",
+        "- **Dashed line:** linear trend (least squares) of the annual values.",
+        "- **Bold:** a significant trend (p < 0.05), in the summary and in the tables.",
+        "",
+        "## Files for download",
+        "",
+        "- [ecv_annual.xlsx](ecv_annual.xlsx): annual value of every ECV in every atoll.",
+        "- [ecv_trends.xlsx](ecv_trends.xlsx): mean, trend per decade and p value by atoll.",
+        "- [figures/vector](figures/vector): all figures as PDF.",
         "",
     ]
     figure, table = 0, 0
@@ -324,17 +331,15 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
         captions = [
             ("1_main_atolls", f"annual values in the {len(main)} atolls with the most mangrove area, with linear trend "
                               "(dashed) and trend per decade."),
-            ("2_boxplot", f"distribution of the annual values in the {len(main)} atolls with the most mangrove area. "
-                          "Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years."),
+            ("2_boxplot", f"distribution of the annual values in the {len(main)} atolls with the most mangrove area."),
         ]
         if s.get("maps"):
             maps = [
                 ("3_map_mean", f"mean of the annual values for the whole Maldives ({s['map_period']}). "
-                               "Outlines: atolls; dark outline: atolls with mangroves. The colour scale runs from the "
-                               "lowest to the highest value in the map."),
+                               "Outlines: atolls; dark outline: atolls with mangroves."),
                 ("4_map_atolls", f"mean of the annual values by atoll ({s['map_period']}). Colour: atolls with "
-                                 "mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale "
-                                 "runs from the lowest to the highest atoll mean."),
+                                 "mangroves; grey: atolls without mangroves in the Cerri 2020 extent. "
+                                 "Both maps use the same colour scale."),
             ]
         else:
             maps = []
@@ -360,8 +365,7 @@ def write_report(folder: Path, sections: list[dict], atolls: list[str], main: li
             lines += [f"![{s['name']}, figure {figure}](figures/{s['id']}_{suffix}.png)", "",
                       f"**Figure {figure}.** {text[0].upper()}{text[1:]}", ""]
         table += 1
-        lines += [f"**Table {table}.** Mean of the annual values and linear trend by atoll, largest mangrove area first. "
-                  "Bold: significant (p < 0.05).", "", s["table"], ""]
+        lines += [f"**Table {table}.** Mean of the annual values and linear trend by atoll, largest mangrove area first.", "", s["table"], ""]
         if s["note"]:
             lines += [s["note"], ""]
     if REPORT_REFERENCES:
@@ -453,10 +457,14 @@ def run_ecv(config: Config, base_dir: Path, units: Units, out_dir: Path, log=pri
                     atolls_ll = units.atolls[["atoll", "geometry"]].to_crs(4326)
                 cmap_name = getattr(config.project, "map_colormap", "viridis")
                 means = _used(annual[annual["unit"].isin(atolls)]).groupby("unit")["value"].mean()
-                _, _, names = ecv_maps.read_stack(raster_path)
-                period = ecv_maps._period_text(names)
-                files.append(ecv_maps.plot_value_map(item, raster_path, atolls_ll, atolls, cmap_name, figures))
-                files.append(ecv_maps.plot_atoll_map(item, means, atolls_ll, section["period"], cmap_name, figures))
+                _, _, names = ecv_maps.read_stack(raster_path, item.exclude_years)
+                period = ecv_maps._period_text(names, [y for y in item.exclude_years if str(y) in
+                                                       {n.strip() for n in ecv_maps.read_stack(raster_path)[2]}])
+                limits = ecv_maps.map_limits(raster_path, item.exclude_years)  # one colour scale for both maps
+                files.append(ecv_maps.plot_value_map(item, raster_path, atolls_ll, atolls, cmap_name, figures,
+                                                     exclude_years=item.exclude_years))
+                files.append(ecv_maps.plot_atoll_map(item, means, atolls_ll, section["period"], cmap_name, figures,
+                                                     limits=limits))
                 section["maps"], section["map_period"] = True, period
         sections.append(section)
         log(f"  {item.id}: {series['year'].nunique()} years in the aggregate"

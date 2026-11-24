@@ -13,13 +13,20 @@ Task 3.2 of Work Package 3 of the iClimateAction project, funded by the European
 | [Air temperature, daily mean](#air-temperature-daily-mean-chelsa) | CHELSA | 1993 to 2024 | °C | **+0.225 °C** |
 | [Air temperature, daily maximum](#air-temperature-daily-maximum-chelsa) | CHELSA | 1993 to 2024 | °C | **+0.229 °C** |
 
-Trend of the average of the 8 atolls with mangroves, in years where all of them have a value, over the period shown. Bold: significant (p < 0.05).
+Trend of the average of the 8 atolls with mangroves, in years where all of them have a value, over the period shown.
 
 ## How to read the figures
 
 - **Atolls with mangroves:** 8 (Gaafu Dhaalu, Haa Alifu, Haa Dhaalu, Kaafu, Laamu, Lhaviyani, Noonu, Seenu). Mangrove extent: Cerri 2020.
 - **Main atolls:** Haa Alifu, Noonu, Haa Dhaalu, Seenu, Lhaviyani. Together they hold 92% of the mangrove area.
-- **Dashed line:** linear trend (least squares) of the annual values. A trend is called significant when p < 0.05.
+- **Dashed line:** linear trend (least squares) of the annual values.
+- **Bold:** a significant trend (p < 0.05), in the summary and in the tables.
+
+## Files for download
+
+- [ecv_annual.xlsx](ecv_annual.xlsx): annual value of every ECV in every atoll.
+- [ecv_trends.xlsx](ecv_trends.xlsx): mean, trend per decade and p value by atoll.
+- [figures/vector](figures/vector): all figures as PDF.
 
 ## Sea surface temperature (ESA CCI)
 
@@ -29,9 +36,9 @@ Trend of the average of the 8 atolls with mangroves, in years where all of them 
 
 ![Sea surface temperature (ESA CCI), figure 2](figures/ECV_SST_CCI_2_boxplot.png)
 
-**Figure 2.** Distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
+**Figure 2.** Distribution of the annual values in the 5 atolls with the most mangrove area.
 
-**Table 1.** Mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 1.** Mean of the annual values and linear trend by atoll, largest mangrove area first.
 
 | Atoll | Mangrove area (km²) | Period | Mean (°C) | Trend (°C per decade) | p |
 |---|---|---|---|---|---|
@@ -52,14 +59,14 @@ Trend of the average of the 8 atolls with mangroves, in years where all of them 
 
 ![Sea level, absolute dynamic topography (Copernicus Marine), figure 4](figures/ECV_SEALEVEL_2_boxplot.png)
 
-**Figure 4.** Distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
+**Figure 4.** Distribution of the annual values in the 5 atolls with the most mangrove area.
 
 <table><tr>
-<td width="50%" valign="top"><img src="figures/ECV_SEALEVEL_3_map_mean.png" alt="Sea level, absolute dynamic topography (Copernicus Marine), figure 5" width="100%"><br><b>Figure 5.</b> Mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves. The colour scale runs from the lowest to the highest value in the map.</td>
-<td width="50%" valign="top"><img src="figures/ECV_SEALEVEL_4_map_atolls.png" alt="Sea level, absolute dynamic topography (Copernicus Marine), figure 6" width="100%"><br><b>Figure 6.</b> Mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale runs from the lowest to the highest atoll mean.</td>
+<td width="50%" valign="top"><img src="figures/ECV_SEALEVEL_3_map_mean.png" alt="Sea level, absolute dynamic topography (Copernicus Marine), figure 5" width="100%"><br><b>Figure 5.</b> Mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves.</td>
+<td width="50%" valign="top"><img src="figures/ECV_SEALEVEL_4_map_atolls.png" alt="Sea level, absolute dynamic topography (Copernicus Marine), figure 6" width="100%"><br><b>Figure 6.</b> Mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. Both maps use the same colour scale.</td>
 </tr></table>
 
-**Table 2.** Mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 2.** Mean of the annual values and linear trend by atoll, largest mangrove area first.
 
 | Atoll | Mangrove area (km²) | Period | Mean (m) | Trend (m per decade) | p |
 |---|---|---|---|---|---|
@@ -80,9 +87,9 @@ Trend of the average of the 8 atolls with mangroves, in years where all of them 
 
 ![Sea state, significant wave height (ESA CCI), figure 8](figures/ECV_SEASTATE_2_boxplot.png)
 
-**Figure 8.** Distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
+**Figure 8.** Distribution of the annual values in the 5 atolls with the most mangrove area.
 
-**Table 3.** Mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 3.** Mean of the annual values and linear trend by atoll, largest mangrove area first.
 
 | Atoll | Mangrove area (km²) | Period | Mean (m) | Trend (m per decade) | p |
 |---|---|---|---|---|---|
@@ -103,9 +110,9 @@ Trend of the average of the 8 atolls with mangroves, in years where all of them 
 
 ![Precipitation (CHIRPS v2.0), figure 10](figures/ECV_PRECIP_2_boxplot.png)
 
-**Figure 10.** Distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
+**Figure 10.** Distribution of the annual values in the 5 atolls with the most mangrove area.
 
-**Table 4.** Mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 4.** Mean of the annual values and linear trend by atoll, largest mangrove area first.
 
 | Atoll | Mangrove area (km²) | Period | Mean (mm per year) | Trend (mm per decade) | p |
 |---|---|---|---|---|---|
@@ -126,14 +133,14 @@ Trend of the average of the 8 atolls with mangroves, in years where all of them 
 
 ![Air temperature, daily mean (CHELSA), figure 12](figures/ECV_TAS_2_boxplot.png)
 
-**Figure 12.** Distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
+**Figure 12.** Distribution of the annual values in the 5 atolls with the most mangrove area.
 
 <table><tr>
-<td width="50%" valign="top"><img src="figures/ECV_TAS_3_map_mean.png" alt="Air temperature, daily mean (CHELSA), figure 13" width="100%"><br><b>Figure 13.</b> Mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves. The colour scale runs from the lowest to the highest value in the map.</td>
-<td width="50%" valign="top"><img src="figures/ECV_TAS_4_map_atolls.png" alt="Air temperature, daily mean (CHELSA), figure 14" width="100%"><br><b>Figure 14.</b> Mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale runs from the lowest to the highest atoll mean.</td>
+<td width="50%" valign="top"><img src="figures/ECV_TAS_3_map_mean.png" alt="Air temperature, daily mean (CHELSA), figure 13" width="100%"><br><b>Figure 13.</b> Mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves.</td>
+<td width="50%" valign="top"><img src="figures/ECV_TAS_4_map_atolls.png" alt="Air temperature, daily mean (CHELSA), figure 14" width="100%"><br><b>Figure 14.</b> Mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. Both maps use the same colour scale.</td>
 </tr></table>
 
-**Table 5.** Mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 5.** Mean of the annual values and linear trend by atoll, largest mangrove area first.
 
 | Atoll | Mangrove area (km²) | Period | Mean (°C) | Trend (°C per decade) | p |
 |---|---|---|---|---|---|
@@ -154,14 +161,14 @@ Trend of the average of the 8 atolls with mangroves, in years where all of them 
 
 ![Air temperature, daily maximum (CHELSA), figure 16](figures/ECV_TASMAX_2_boxplot.png)
 
-**Figure 16.** Distribution of the annual values in the 5 atolls with the most mangrove area. Box: middle half of the years; line: median; whiskers: up to 1.5 times the box; dots: single years.
+**Figure 16.** Distribution of the annual values in the 5 atolls with the most mangrove area.
 
 <table><tr>
-<td width="50%" valign="top"><img src="figures/ECV_TASMAX_3_map_mean.png" alt="Air temperature, daily maximum (CHELSA), figure 17" width="100%"><br><b>Figure 17.</b> Mean of the annual values for the whole Maldives (1993 to 2024). Outlines: atolls; dark outline: atolls with mangroves. The colour scale runs from the lowest to the highest value in the map.</td>
-<td width="50%" valign="top"><img src="figures/ECV_TASMAX_4_map_atolls.png" alt="Air temperature, daily maximum (CHELSA), figure 18" width="100%"><br><b>Figure 18.</b> Mean of the annual values by atoll (1993 to 2024). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. The colour scale runs from the lowest to the highest atoll mean.</td>
+<td width="50%" valign="top"><img src="figures/ECV_TASMAX_3_map_mean.png" alt="Air temperature, daily maximum (CHELSA), figure 17" width="100%"><br><b>Figure 17.</b> Mean of the annual values for the whole Maldives (1993 to 2024, without 2007). Outlines: atolls; dark outline: atolls with mangroves.</td>
+<td width="50%" valign="top"><img src="figures/ECV_TASMAX_4_map_atolls.png" alt="Air temperature, daily maximum (CHELSA), figure 18" width="100%"><br><b>Figure 18.</b> Mean of the annual values by atoll (1993 to 2024, without 2007). Colour: atolls with mangroves; grey: atolls without mangroves in the Cerri 2020 extent. Both maps use the same colour scale.</td>
 </tr></table>
 
-**Table 6.** Mean of the annual values and linear trend by atoll, largest mangrove area first. Bold: significant (p < 0.05).
+**Table 6.** Mean of the annual values and linear trend by atoll, largest mangrove area first.
 
 | Atoll | Mangrove area (km²) | Period | Mean (°C) | Trend (°C per decade) | p |
 |---|---|---|---|---|---|
