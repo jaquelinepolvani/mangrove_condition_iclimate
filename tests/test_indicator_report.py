@@ -70,7 +70,7 @@ def test_report_files_are_written(result):
     for ind in ("COND_NDVI", "COND_SAL"):
         ecvs = [e for e, _, _ in indicators.ECV_PAIRS[ind]]
         names = ["1_variable_by_atoll", "3_rescaled_by_year", "4_account_table", "5_change_map",
-                 "7_ecv_forest", "8_ecv_all_atolls", "9_series_with_ecvs", *[f"6_{e}_by_atoll" for e in ecvs]]
+                 "7_ecv_forest", "8_ecv_all_atolls", *[f"6_{e}_by_atoll" for e in ecvs]]
         if ind == "COND_NDVI":                       # only NDVI has class limits in the test configuration
             names.append("2_condition_classes")
         for name in names:
@@ -223,8 +223,7 @@ def test_ecv_comparison_flags_the_sign_of_the_relationship(result):
     assert {"r_low", "r_high", "p_perm", "p_perm_holm", "tau", "slope_low", "r_detrended", "r_lag1"} <= set(by_atoll.columns)
     text = _readme(result)
     assert "Sea level" in text and "exploratory analysis" in text and "All atolls" in text
-    assert text.index("#### Time series") < text.index("#### By atoll") < text.index("#### All atolls")
-    assert "Visual comparison" in text
+    assert text.index("#### By atoll") < text.index("#### All atolls")
 
 
 def test_fisher_interval_and_permutation_p():

@@ -745,45 +745,6 @@ def _stat_text(stat: dict) -> tuple[str, bool]:
     return f"r = {stat['r']:+.2f}, n = {stat['n']}", significant
 
 
-def plot_series_with_ecvs(inp: IndicatorInput, annual: pd.DataFrame, results: list[dict], atolls: list[str],
-                          style: dict[str, tuple[str, str]], first: int, last: int, out: Path, number: int) -> Path | None:
-    """Visual comparison by year: the variable in its original unit on top and each ECV below it, panels joined and
-    sharing the year axis. One line per atoll."""
-    if not results:
-        return None
-    ind = inp.indicator
-    shown = [a for a in atolls if a in set(annual["atoll"])]
-    rows = len(results) + 1
-    with plt.rc_context(STYLE):
-        height = 1.9 * rows + 1.2 + HEAD_IN
-        fig, axes = plt.subplots(rows, 1, figsize=(8.8, height), sharex=True,
-                                 gridspec_kw={"height_ratios": [1.5] + [1] * len(results), "hspace": 0.09})
-        for atoll in shown:
-            colour, marker = style[atoll]
-            part = _full_years(annual[(annual["atoll"] == atoll) & annual["year"].between(first, last)], first, last)
-            axes[0].plot(part["year"], part["value"], color=colour, marker=marker, markersize=4.5, linewidth=1.2,
-                         markeredgecolor="white", markeredgewidth=0.4, zorder=3)
-            for ax, res in zip(axes[1:], results, strict=True):
-                line = res["series"][res["series"]["unit"] == atoll].sort_values("year")
-                ax.plot(line["year"], line["value"], color=colour, marker=marker, markersize=4, linewidth=1.0,
-                        markeredgecolor="white", markeredgewidth=0.4, zorder=3)
-        axes[0].set_ylabel(_label(ind), fontsize=9)
-        for ax, res in zip(axes[1:], results, strict=True):
-            name, unit = _short_ecv(res["spec"]).rsplit(" (", 1)
-            ax.set_ylabel(f"{name}\n({unit}", fontsize=9)
-        for ax in axes:
-            for side in ("top", "right"):
-                ax.spines[side].set_visible(False)
-            ax.grid(color=GRID, linewidth=0.5, zorder=0)
-            ax.set_axisbelow(True)
-        axes[-1].set_xlim(first - 0.4, last + 0.4)
-        axes[-1].set_xticks(range(first, last + 1))
-        _header(fig, f"{ind.name} and the ECVs by year", "One line per atoll, original values", height)
-        _atoll_legend(fig, {a: style[a] for a in shown})
-        fig.subplots_adjust(left=0.11, right=0.985, top=1 - HEAD_IN / height, bottom=0.1)
-        return _save(fig, Path(out) / f"{ind.id}_{number}_series_with_ecvs.png")
-
-
 def plot_ecv_by_atoll(inp: IndicatorInput, res: dict, atolls: list[str], out: Path, number: int) -> Path:
     """One panel per atoll: the variable against one ECV, both in their original units, with the least squares line and
     the 95% confidence band of its mean. Every point is labelled with its year."""
@@ -861,51 +822,41 @@ def plot_ecv_forest(inp: IndicatorInput, results: list[dict], atolls: list[str],
 
 def plot_ecv_all_atolls(inp: IndicatorInput, results: list[dict], style: dict[str, tuple[str, str]], out: Path,
                         number: int) -> Path | None:
-    """All atolls together. Top row: differences from the atoll mean, one line for all points. Bottom row: original
-    values, one line for each atoll."""
+    """All atolls together: differences from the atoll mean, with a dashed line fitted to all points."""
     if not results:
         return None
     ind = inp.indicator
     with plt.rc_context(STYLE):
-        height = 7.4 + HEAD_IN
-        fig, axes = plt.subplots(2, len(results), figsize=(3.7 * len(results) + 0.6, height), squeeze=False)
-        for col, res in enumerate(results):
+        height = 3.9 + HEAD_IN
+        fig, axes = plt.subplots(1, len(results), figsize=(3.7 * len(results) + 0.6, height), squeeze=False)
+        axes = axes[0]
+        for ax, res in zip(axes, results, strict=True):
             spec, pairs, pooled = res["spec"], res["pairs"], res["pooled"]
-            top, bottom = axes[0][col], axes[1][col]
             for atoll, part in pairs.groupby("atoll"):
                 colour, marker = style[atoll]
-                top.scatter(part["ecv_anomaly"], part["variable_anomaly"], s=22, color=colour, marker=marker,
-                            edgecolor="white", linewidth=0.5, zorder=4)
-                bottom.scatter(part["ecv"], part["variable"], s=22, color=colour, marker=marker, edgecolor="white",
-                               linewidth=0.5, zorder=4)
-                if len(part) >= 4 and np.ptp(part["ecv"]) > 0:
-                    slope, intercept = np.polyfit(part["ecv"], part["variable"], 1)
-                    xs = np.array([part["ecv"].min(), part["ecv"].max()])
-                    bottom.plot(xs, intercept + slope * xs, color=colour, linewidth=1.0, zorder=3)
-            top.axhline(0, color=GRID, linewidth=0.9, zorder=1)
-            top.axvline(0, color=GRID, linewidth=0.9, zorder=1)
+                ax.scatter(part["ecv_anomaly"], part["variable_anomaly"], s=22, color=colour, marker=marker,
+                           edgecolor="white", linewidth=0.5, zorder=4)
+            ax.axhline(0, color=GRID, linewidth=0.9, zorder=1)
+            ax.axvline(0, color=GRID, linewidth=0.9, zorder=1)
             if np.ptp(pairs["ecv_anomaly"]) > 0:
                 slope, intercept = np.polyfit(pairs["ecv_anomaly"], pairs["variable_anomaly"], 1)
                 xs = np.array([pairs["ecv_anomaly"].min(), pairs["ecv_anomaly"].max()])
-                top.plot(xs, intercept + slope * xs, color=INK, linewidth=1.1, linestyle=(0, (5, 3)), zorder=3)
-            top.set_title(f"{split_name(spec.name)[0]}\nexpected: {_sign_text(res['sign'])} ({res['strength']})\n"
-                          f"r = {pooled['r']:+.2f}, rho = {pooled['rho']:+.2f}, n = {pooled['n']}, {_p_text(pooled['p_perm_years'])}",
-                          fontsize=9, color=INK, loc="left")
+                ax.plot(xs, intercept + slope * xs, color=INK, linewidth=1.1, linestyle=(0, (5, 3)), zorder=3)
+            ax.set_title(f"{split_name(spec.name)[0]}\nexpected: {_sign_text(res['sign'])} ({res['strength']})\n"
+                         f"r = {pooled['r']:+.2f}, rho = {pooled['rho']:+.2f}, n = {pooled['n']}, {_p_text(pooled['p_perm_years'])}",
+                         fontsize=9, color=INK, loc="left")
             unit = _axis_unit(spec.unit)
-            top.set_xlabel(f"{_short_ecv(spec).rsplit(' (', 1)[0]}, difference from atoll mean ({unit})")
-            bottom.set_xlabel(_short_ecv(spec))
-            for ax in (top, bottom):
-                for side in ("top", "right"):
-                    ax.spines[side].set_visible(False)
-                ax.grid(color=GRID, linewidth=0.5, zorder=0)
-                ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(nbins=4))
+            ax.set_xlabel(f"{_short_ecv(spec).rsplit(' (', 1)[0]}, difference from atoll mean ({unit})")
+            for side in ("top", "right"):
+                ax.spines[side].set_visible(False)
+            ax.grid(color=GRID, linewidth=0.5, zorder=0)
+            ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(nbins=4))
         unit = f" ({_unit_text(ind)})" if _unit_text(ind) else ""
-        axes[0][0].set_ylabel(f"{ind.name}, difference from atoll mean{unit}")
-        axes[1][0].set_ylabel(_label(ind))
+        axes[0].set_ylabel(f"{ind.name}, difference from atoll mean{unit}")
         _header(fig, f"{ind.name} against the ECVs, all atolls",
-                "Top: differences from the atoll mean, dashed line for all points. Bottom: original values, one line per atoll", height)
+                "Differences from the atoll mean, dashed line fitted to all points", height)
         _atoll_legend(fig, {a: style[a] for a in sorted({a for r in results for a in r["pairs"]["atoll"].unique()}, key=list(style).index)})
-        fig.tight_layout(rect=(0, 0.07, 1, 1 - HEAD_IN / height))
+        fig.tight_layout(rect=(0, 0.1, 1, 1 - HEAD_IN / height))
         return _save(fig, Path(out) / f"{ind.id}_{number}_ecv_all_atolls.png")
 
 
@@ -1024,7 +975,7 @@ def write_report(folder: Path, selected: list[IndicatorInput], rows: pd.DataFram
               "literature, in the unit of the variable.", ""]
     lines += ["**Rescaling.** Following the SEEA EA framework, each variable (V, in its original unit) is converted to a condition "
               "indicator (I) between 0 (lowest condition) and 1 (reference condition) by linear rescaling between reference levels "
-              "(VL, VH). Values beyond the reference levels are set to 0 or 1.", ""]
+              "(VL, VH).", ""]
     lines += ["## How to read the figures", "",
               "- **Rescaled indicator:** the condition indicator, from 0 (lowest condition) to 1 (reference condition), obtained from the "
               "variable as described under Rescaling. For indicators measured in the mangrove patches, the atoll value is the mean of the "
@@ -1102,10 +1053,6 @@ def write_report(folder: Path, selected: list[IndicatorInput], rows: pd.DataFram
                 continue
             lines += [f"### {ind.name}", ""]
             figure += 1
-            lines += ["#### Time series", "",
-                      f"![{ind.name} and the ECVs by year, figure {figure}](figures/{ind.id}_9_series_with_ecvs.png)", "",
-                      f"**Figure {figure}.** Visual comparison of {ind.name} (top) and the ECVs (below) by year. One line per atoll, original values.", ""]
-            figure += 1
             lines += ["#### By atoll", "",
                       f"![{ind.name} correlation with the ECVs, figure {figure}](figures/{ind.id}_7_ecv_forest.png)", "",
                       f"**Figure {figure}.** Pearson r of {ind.name} with each ECV in each atoll, with its 95% confidence interval. "
@@ -1137,8 +1084,8 @@ def write_report(folder: Path, selected: list[IndicatorInput], rows: pd.DataFram
             summary = comparison[comparison["indicator_id"] == ind.id]
             lines += ["#### All atolls", "",
                       f"![{ind.name} against the ECVs, all atolls, figure {figure}](figures/{ind.id}_8_ecv_all_atolls.png)", "",
-                      f"**Figure {figure}.** {ind.name} against the ECVs, all atolls. Top: differences from the atoll mean, dashed "
-                      "line for all points. Bottom: original values, one line for each atoll.", ""]
+                      f"**Figure {figure}.** {ind.name} against the ECVs, all atolls. Differences from the atoll mean, with a "
+                      "dashed line fitted to all points.", ""]
             table += 1
             lines += ["| ECV | Expected | n | r | rho | p (year permutation) | Atolls with the expected sign | Median r of the atolls |",
                       "|---|---|---|---|---|---|---|---|"]
@@ -1205,7 +1152,6 @@ def run_indicator_report(config: Config, units: Units, inputs: list[IndicatorInp
         if base_dir is not None and config.ecvs:
             results = ecv_comparison(config, Path(base_dir), annual, ind.id, atolls, first, last, log)
             if results:
-                files.append(plot_series_with_ecvs(inp, annual, results, atolls, style, first, last, figures, 9))
                 for res in results:
                     files.append(plot_ecv_by_atoll(inp, res, atolls, figures, 6))
                 files.append(plot_ecv_forest(inp, results, atolls, figures, 7))

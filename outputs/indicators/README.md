@@ -11,7 +11,7 @@ Condition indicators of the mangroves of the Maldives, following the SEEA Ecosys
 
 **Table 1.** Condition indicators and condition classes. The limits of the classes are thresholds from the literature, in the unit of the variable.
 
-**Rescaling.** Following the SEEA EA framework, each variable (V, in its original unit) is converted to a condition indicator (I) between 0 (lowest condition) and 1 (reference condition) by linear rescaling between reference levels (VL, VH). Values beyond the reference levels are set to 0 or 1.
+**Rescaling.** Following the SEEA EA framework, each variable (V, in its original unit) is converted to a condition indicator (I) between 0 (lowest condition) and 1 (reference condition) by linear rescaling between reference levels (VL, VH).
 
 ## How to read the figures
 
@@ -124,21 +124,15 @@ This section explores whether the annual variation of each condition indicator i
 
 ### NDVI
 
-#### Time series
-
-![NDVI and the ECVs by year, figure 10](figures/COND_NDVI_9_series_with_ecvs.png)
-
-**Figure 10.** Visual comparison of NDVI (top) and the ECVs (below) by year. One line per atoll, original values.
-
 #### By atoll
 
-![NDVI correlation with the ECVs, figure 11](figures/COND_NDVI_7_ecv_forest.png)
+![NDVI correlation with the ECVs, figure 10](figures/COND_NDVI_7_ecv_forest.png)
 
-**Figure 11.** Pearson r of NDVI with each ECV in each atoll, with its 95% confidence interval. A filled dot has the expected sign.
+**Figure 10.** Pearson r of NDVI with each ECV in each atoll, with its 95% confidence interval. A filled dot has the expected sign.
 
-![NDVI against Sea level, absolute dynamic topography (Copernicus Marine), figure 12](figures/COND_NDVI_6_ECV_SEALEVEL_by_atoll.png)
+![NDVI against Sea level, absolute dynamic topography (Copernicus Marine), figure 11](figures/COND_NDVI_6_ECV_SEALEVEL_by_atoll.png)
 
-**Figure 12.** NDVI against sea level, absolute dynamic topography (m) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
+**Figure 11.** NDVI against sea level, absolute dynamic topography (m) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
 
 | Atoll | n | r (95% CI) | rho | tau | Slope (95% CI) | p (perm.) | p (Holm) | r detrended | r lag 1 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -150,9 +144,9 @@ This section explores whether the annual variation of each condition indicator i
 
 **Table 6.** NDVI and sea level, absolute dynamic topography: the 5 atolls with the largest mangrove area. Slope: change in NDVI per standard deviation of the ECV (0.0266 m).
 
-![NDVI against Precipitation (CHIRPS v2.0), figure 13](figures/COND_NDVI_6_ECV_PRECIP_by_atoll.png)
+![NDVI against Precipitation (CHIRPS v2.0), figure 12](figures/COND_NDVI_6_ECV_PRECIP_by_atoll.png)
 
-**Figure 13.** NDVI against precipitation (mm per year) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
+**Figure 12.** NDVI against precipitation (mm per year) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
 
 | Atoll | n | r (95% CI) | rho | tau | Slope (95% CI) | p (perm.) | p (Holm) | r detrended | r lag 1 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -164,9 +158,9 @@ This section explores whether the annual variation of each condition indicator i
 
 **Table 7.** NDVI and precipitation: the 5 atolls with the largest mangrove area. Slope: change in NDVI per standard deviation of the ECV (317 mm per year).
 
-![NDVI against Air temperature, daily maximum (CHELSA), figure 14](figures/COND_NDVI_6_ECV_TASMAX_by_atoll.png)
+![NDVI against Air temperature, daily maximum (CHELSA), figure 13](figures/COND_NDVI_6_ECV_TASMAX_by_atoll.png)
 
-**Figure 14.** NDVI against air temperature, daily maximum (°C) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
+**Figure 13.** NDVI against air temperature, daily maximum (°C) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
 
 | Atoll | n | r (95% CI) | rho | tau | Slope (95% CI) | p (perm.) | p (Holm) | r detrended | r lag 1 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -180,9 +174,9 @@ This section explores whether the annual variation of each condition indicator i
 
 #### All atolls
 
-![NDVI against the ECVs, all atolls, figure 15](figures/COND_NDVI_8_ecv_all_atolls.png)
+![NDVI against the ECVs, all atolls, figure 14](figures/COND_NDVI_8_ecv_all_atolls.png)
 
-**Figure 15.** NDVI against the ECVs, all atolls. Top: differences from the atoll mean, dashed line for all points. Bottom: original values, one line for each atoll.
+**Figure 14.** NDVI against the ECVs, all atolls. Differences from the atoll mean, with a dashed line fitted to all points.
 
 | ECV | Expected | n | r | rho | p (year permutation) | Atolls with the expected sign | Median r of the atolls |
 |---|---|---|---|---|---|---|---|
@@ -194,21 +188,15 @@ This section explores whether the annual variation of each condition indicator i
 
 ### Salinity
 
-#### Time series
-
-![Salinity and the ECVs by year, figure 16](figures/COND_SAL_9_series_with_ecvs.png)
-
-**Figure 16.** Visual comparison of Salinity (top) and the ECVs (below) by year. One line per atoll, original values.
-
 #### By atoll
 
-![Salinity correlation with the ECVs, figure 17](figures/COND_SAL_7_ecv_forest.png)
+![Salinity correlation with the ECVs, figure 15](figures/COND_SAL_7_ecv_forest.png)
 
-**Figure 17.** Pearson r of Salinity with each ECV in each atoll, with its 95% confidence interval. A filled dot has the expected sign.
+**Figure 15.** Pearson r of Salinity with each ECV in each atoll, with its 95% confidence interval. A filled dot has the expected sign.
 
-![Salinity against Sea level, absolute dynamic topography (Copernicus Marine), figure 18](figures/COND_SAL_6_ECV_SEALEVEL_by_atoll.png)
+![Salinity against Sea level, absolute dynamic topography (Copernicus Marine), figure 16](figures/COND_SAL_6_ECV_SEALEVEL_by_atoll.png)
 
-**Figure 18.** Salinity (psu) against sea level, absolute dynamic topography (m) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
+**Figure 16.** Salinity (psu) against sea level, absolute dynamic topography (m) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
 
 | Atoll | n | r (95% CI) | rho | tau | Slope (95% CI) | p (perm.) | p (Holm) | r detrended | r lag 1 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -220,9 +208,9 @@ This section explores whether the annual variation of each condition indicator i
 
 **Table 10.** Salinity and sea level, absolute dynamic topography: the 5 atolls with the largest mangrove area. Slope: change in Salinity (psu) per standard deviation of the ECV (0.0264 m).
 
-![Salinity against Precipitation (CHIRPS v2.0), figure 19](figures/COND_SAL_6_ECV_PRECIP_by_atoll.png)
+![Salinity against Precipitation (CHIRPS v2.0), figure 17](figures/COND_SAL_6_ECV_PRECIP_by_atoll.png)
 
-**Figure 19.** Salinity (psu) against precipitation (mm per year) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
+**Figure 17.** Salinity (psu) against precipitation (mm per year) in each atoll, original values. Labels: year. Line: least squares fit with its 95% confidence band. A bold r marks an adjusted p < 0.05.
 
 | Atoll | n | r (95% CI) | rho | tau | Slope (95% CI) | p (perm.) | p (Holm) | r detrended | r lag 1 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -236,9 +224,9 @@ This section explores whether the annual variation of each condition indicator i
 
 #### All atolls
 
-![Salinity against the ECVs, all atolls, figure 20](figures/COND_SAL_8_ecv_all_atolls.png)
+![Salinity against the ECVs, all atolls, figure 18](figures/COND_SAL_8_ecv_all_atolls.png)
 
-**Figure 20.** Salinity against the ECVs, all atolls. Top: differences from the atoll mean, dashed line for all points. Bottom: original values, one line for each atoll.
+**Figure 18.** Salinity against the ECVs, all atolls. Differences from the atoll mean, with a dashed line fitted to all points.
 
 | ECV | Expected | n | r | rho | p (year permutation) | Atolls with the expected sign | Median r of the atolls |
 |---|---|---|---|---|---|---|---|
